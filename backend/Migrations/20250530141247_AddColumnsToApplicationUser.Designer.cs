@@ -4,6 +4,7 @@ using AspnetCoreMvcFull.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspnetCoreMvcFull.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250530141247_AddColumnsToApplicationUser")]
+    partial class AddColumnsToApplicationUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,7 +107,7 @@ namespace AspnetCoreMvcFull.Migrations
                         new
                         {
                             Id = "1",
-                            CreatedDate = new DateTime(2025, 5, 30, 14, 51, 43, 581, DateTimeKind.Utc).AddTicks(4115),
+                            CreatedDate = new DateTime(2025, 5, 30, 14, 12, 47, 39, DateTimeKind.Utc).AddTicks(399),
                             Description = "Administrator with full access",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
@@ -112,7 +115,7 @@ namespace AspnetCoreMvcFull.Migrations
                         new
                         {
                             Id = "2",
-                            CreatedDate = new DateTime(2025, 5, 30, 14, 51, 43, 581, DateTimeKind.Utc).AddTicks(4206),
+                            CreatedDate = new DateTime(2025, 5, 30, 14, 12, 47, 39, DateTimeKind.Utc).AddTicks(469),
                             Description = "Manager with limited access",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
@@ -120,7 +123,7 @@ namespace AspnetCoreMvcFull.Migrations
                         new
                         {
                             Id = "3",
-                            CreatedDate = new DateTime(2025, 5, 30, 14, 51, 43, 581, DateTimeKind.Utc).AddTicks(4308),
+                            CreatedDate = new DateTime(2025, 5, 30, 14, 12, 47, 39, DateTimeKind.Utc).AddTicks(472),
                             Description = "Regular user",
                             Name = "User",
                             NormalizedName = "USER"
@@ -217,12 +220,6 @@ namespace AspnetCoreMvcFull.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AdminDecisionUserId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AdminNotes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Category")
                         .HasColumnType("int");
 
@@ -240,17 +237,8 @@ namespace AspnetCoreMvcFull.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("EscalationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EscalationReason")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsEscalatedToAdmin")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Location")
                         .IsRequired()

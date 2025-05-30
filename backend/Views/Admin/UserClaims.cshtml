@@ -1,0 +1,133 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.ClaimRequest>
+@{
+    ViewData["Title"] = "User Claims";
+    ViewData["container"] = "container-fluid";
+    var user = ViewBag.User as AspnetCoreMvcFull.Models.Identity.ApplicationUser;
+}
+
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="text-dark mb-1">
+                            <i class="bx bx-list-check me-2"></i>Claims by @user.FirstName @user.LastName
+                        </h4>
+                        <p class="mb-0 text-muted">@user.Email • Total Claims: @Model.Count()</p>
+                    </div>
+                    <a asp-action="Users" class="btn btn-secondary">
+                        <i class="bx bx-arrow-back me-1"></i>Back to Users
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Claims Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bx bx-list-check me-2"></i>All Claims (@Model.Count())
+                </h5>
+            </div>
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th>Owner</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <h6 class="mb-0">@claim.Item.Name</h6>
+                                            <small class="text-muted">@claim.Item.Type</small>
+                                        </div>
+                                    </td>
+                                    <td>@claim.Item.User.FirstName @claim.Item.User.LastName</td>
+                                    <td>
+                                        <span class="text-truncate d-block" style="max-width: 200px;" title="@claim.Message">
+                                            @claim.Message
+                                        </span>
+                                    </td>
+                                    <td>@claim.RequestDate.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <span
+                                            class="badge bg-@(claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Pending ? "warning" : 
+                                                                                                           claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Approved ? "success" : "danger")">
+                                    @claim.Status
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a asp-controller="Items" asp-action="Details" asp-route-id="@claim.Item.Id"
+                                        class="btn btn-sm btn-outline-primary" title="View Item">
+                                        <i class="bx bx-show"></i>
+                                    </a>
+
+                                    @if (claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Pending)
+                                            {
+                                                <form asp-action="UpdateClaimStatus" method="post" class="d-inline">
+                                                    <input type="hidden" name="claimId" value="@claim.Id" />
+                                                    <input type="hidden" name="userId" value="@user.Id" />
+                                                    <input type="hidden" name="status"
+                                                        value="@AspnetCoreMvcFull.Models.ClaimStatus.Approved" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-success"
+                                                        title="Approve Claim" onclick="return confirm('Approve this claim?')">
+                                                        <i class="bx bx-check"></i>
+                                                    </button>
+                                                </form>
+
+                                                <form asp-action="UpdateClaimStatus" method="post" class="d-inline">
+                                                    <input type="hidden" name="claimId" value="@claim.Id" />
+                                                    <input type="hidden" name="userId" value="@user.Id" />
+                                                    <input type="hidden" name="status"
+                                                        value="@AspnetCoreMvcFull.Models.ClaimStatus.Rejected" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning"
+                                                        title="Reject Claim" onclick="return confirm('Reject this claim?')">
+                                                        <i class="bx bx-x"></i>
+                                                    </button>
+                                                </form>
+                                            }
+
+                                            <form asp-action="DeleteUserClaim" method="post" class="d-inline">
+                                                <input type="hidden" name="claimId" value="@claim.Id" />
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Claim"
+                                                    onclick="return confirm('Delete this claim?')">
+                                                    <i class="bx bx-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body text-center py-4">
+                    <i class="bx bx-list-check bx-lg text-muted mb-2"></i>
+                    <p class="text-muted mb-0">No claims submitted by this user</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

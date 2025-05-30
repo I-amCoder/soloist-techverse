@@ -1,0 +1,269 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.Item>
+@{
+    ViewData["Title"] = "User Posts";
+    ViewData["container"] = "container-fluid";
+    var user = ViewBag.User as AspnetCoreMvcFull.Models.Identity.ApplicationUser;
+    var lostItems = ViewBag.LostItems as List<AspnetCoreMvcFull.Models.Item>;
+    var foundItems = ViewBag.FoundItems as List<AspnetCoreMvcFull.Models.Item>;
+}
+
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="text-dark mb-1">
+                            <i class="bx bx-package me-2"></i>Posts by @user.FirstName @user.LastName
+                        </h4>
+                        <p class="mb-0 text-muted">@user.Email • Total Posts: @Model.Count()</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Users" class="btn btn-secondary">
+                            <i class="bx bx-arrow-back me-1"></i>Back to Users
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <i class="bx bx-search-alt bx-lg mb-2 text-danger"></i>
+                <h3 class="text-danger">@lostItems.Count</h3>
+                <small class="text-muted">Lost Items</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <i class="bx bx-check-circle bx-lg mb-2 text-success"></i>
+                <h3 class="text-success">@foundItems.Count</h3>
+                <small class="text-muted">Found Items</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <i class="bx bx-time bx-lg mb-2 text-warning"></i>
+                <h3 class="text-warning">@Model.Count(i => i.Status == AspnetCoreMvcFull.Models.ItemStatus.Active)</h3>
+                <small class="text-muted">Active Posts</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-secondary">
+            <div class="card-body text-center">
+                <i class="bx bx-archive bx-lg mb-2 text-secondary"></i>
+                <h3 class="text-secondary">@Model.Count(i => i.Status == AspnetCoreMvcFull.Models.ItemStatus.Resolved)</h3>
+                <small class="text-muted">Resolved Posts</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lost Items Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 text-danger">
+                    <i class="bx bx-search-alt me-2"></i>Lost Items (@lostItems.Count)
+                </h5>
+            </div>
+            @if (lostItems.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th>Location</th>
+                                <th>Date Lost</th>
+                                <th>Status</th>
+                                <th>Claims</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in lostItems)
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <h6 class="mb-0">@item.Name</h6>
+                                            <small class="text-muted">@item.Category</small>
+                                        </div>
+                                    </td>
+                                    <td>@item.Location</td>
+                                    <td>
+                                        @if (item.DateLostOrFound.HasValue)
+                                        {
+                                            @item.DateLostOrFound.Value.ToString("MMM dd, yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not specified</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-@(item.Status == AspnetCoreMvcFull.Models.ItemStatus.Active ? "success" : "secondary")">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@item.ClaimRequests.Count</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <a asp-controller="Items" asp-action="Details" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="bx bx-show"></i>
+                                            </a>
+                                            
+                                            @if (item.Status == AspnetCoreMvcFull.Models.ItemStatus.Active)
+                                            {
+                                                <form asp-action="UpdatePostStatus" method="post" class="d-inline">
+                                                    <input type="hidden" name="itemId" value="@item.Id" />
+                                                    <input type="hidden" name="userId" value="@user.Id" />
+                                                    <input type="hidden" name="status" value="@AspnetCoreMvcFull.Models.ItemStatus.Resolved" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning" 
+                                                            title="Mark as Resolved" onclick="return confirm('Mark as resolved?')">
+                                                        <i class="bx bx-check"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            
+                                            <form asp-action="DeleteUserPost" method="post" class="d-inline">
+                                                <input type="hidden" name="itemId" value="@item.Id" />
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        title="Delete Post" onclick="return confirm('Delete this post?')">
+                                                    <i class="bx bx-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body text-center py-4">
+                    <i class="bx bx-search-alt bx-lg text-muted mb-2"></i>
+                    <p class="text-muted mb-0">No lost items posted by this user</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Found Items Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="mb-0 text-success">
+                    <i class="bx bx-check-circle me-2"></i>Found Items (@foundItems.Count)
+                </h5>
+            </div>
+            @if (foundItems.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th>Location</th>
+                                <th>Date Found</th>
+                                <th>Status</th>
+                                <th>Claims</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in foundItems)
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <h6 class="mb-0">@item.Name</h6>
+                                            <small class="text-muted">@item.Category</small>
+                                        </div>
+                                    </td>
+                                    <td>@item.Location</td>
+                                    <td>
+                                        @if (item.DateLostOrFound.HasValue)
+                                        {
+                                            @item.DateLostOrFound.Value.ToString("MMM dd, yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not specified</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-@(item.Status == AspnetCoreMvcFull.Models.ItemStatus.Active ? "success" : "secondary")">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@item.ClaimRequests.Count</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <a asp-controller="Items" asp-action="Details" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="bx bx-show"></i>
+                                            </a>
+                                            
+                                            @if (item.Status == AspnetCoreMvcFull.Models.ItemStatus.Active)
+                                            {
+                                                <form asp-action="UpdatePostStatus" method="post" class="d-inline">
+                                                    <input type="hidden" name="itemId" value="@item.Id" />
+                                                    <input type="hidden" name="userId" value="@user.Id" />
+                                                    <input type="hidden" name="status" value="@AspnetCoreMvcFull.Models.ItemStatus.Resolved" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning" 
+                                                            title="Mark as Resolved" onclick="return confirm('Mark as resolved?')">
+                                                        <i class="bx bx-check"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            
+                                            <form asp-action="DeleteUserPost" method="post" class="d-inline">
+                                                <input type="hidden" name="itemId" value="@item.Id" />
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        title="Delete Post" onclick="return confirm('Delete this post?')">
+                                                    <i class="bx bx-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body text-center py-4">
+                    <i class="bx bx-check-circle bx-lg text-muted mb-2"></i>
+                    <p class="text-muted mb-0">No found items posted by this user</p>
+                </div>
+            }
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,318 @@
+@model List<AspnetCoreMvcFull.Models.ViewModels.UserManagementViewModel>
+@{
+    ViewData["Title"] = "Manage Users";
+    ViewData["container"] = "container-fluid";
+}
+
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="text-white mb-1">
+                            <i class="bx bx-users me-2"></i>User Management
+                        </h4>
+                        <p class="mb-0 text-white-50">Manage user accounts and permissions</p>
+                    </div>
+                    <a asp-action="Index" class="btn btn-light">
+                        <i class="bx bx-arrow-back me-1"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Search Users</label>
+                        <input type="text" name="search" value="@ViewBag.SearchTerm" 
+                               class="form-control" placeholder="Name, email, or ID...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Filter by Role</label>
+                        <select name="role" class="form-select">
+                            <option value="">All Roles</option>
+                            @if (ViewBag.AllRoles != null)
+                            {
+                                @foreach (var role in ViewBag.AllRoles)
+                                {
+                                    <option value="@role" selected="@(ViewBag.SelectedRole == role)">@role</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary d-block w-100">
+                            <i class="bx bx-search me-1"></i>Search
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Total Users</label>
+                        <div class="bg-light p-2 rounded text-center">
+                            <h5 class="mb-0 text-primary">@Model.Count</h5>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-table me-2"></i>All Users
+                </h5>
+            </div>
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 250px;">User</th>
+                                <th>Email & Status</th>
+                                <th style="width: 120px;">Role</th>
+                                <th style="width: 100px;">Activity</th>
+                                <th style="width: 80px;">Status</th>
+                                <th style="width: 200px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var userModel in Model)
+                            {
+                                <tr>
+                                    <!-- User Info -->
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm me-3">
+                                                <span class="avatar-initial rounded-circle bg-primary">
+                                                    @userModel.User.FirstName.Substring(0, 1)@userModel.User.LastName.Substring(0, 1)
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">@userModel.User.FirstName @userModel.User.LastName</h6>
+                                                <small class="text-muted">ID: @userModel.User.Id.Substring(0, 8)...</small>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Email & Verification -->
+                                    <td>
+                                        <div>
+                                            @userModel.User.Email
+                                            <br>
+                                            @if (userModel.User.EmailConfirmed)
+                                            {
+                                                <small class="badge bg-success">
+                                                    <i class="bx bx-check-circle"></i> Verified
+                                                </small>
+                                            }
+                                            else
+                                            {
+                                                <small class="badge bg-warning">
+                                                    <i class="bx bx-time"></i> Unverified
+                                                </small>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <!-- Roles -->
+                                    <td>
+                                        @if (userModel.Roles.Any())
+                                        {
+                                            @foreach (var role in userModel.Roles)
+                                            {
+                                                <span class="badge bg-@(role == "Admin" ? "danger" : role == "Manager" ? "warning" : "primary") mb-1">
+                                                    @role
+                                                </span>
+                                                <br>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">No Role</span>
+                                        }
+                                    </td>
+
+                                    <!-- Activity Stats -->
+                                    <td>
+                                        <small class="d-block">
+                                            <i class="bx bx-package text-primary"></i> @userModel.ItemsPosted
+                                        </small>
+                                        <small class="d-block">
+                                            <i class="bx bx-hand text-info"></i> @userModel.ClaimsSubmitted
+                                        </small>
+                                    </td>
+
+                                    <!-- Status -->
+                                    <td>
+                                        @if (userModel.IsActive)
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Inactive</span>
+                                        }
+                                    </td>
+
+                                    <!-- Actions -->
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <!-- View Posts -->
+                                            <a asp-action="UserPosts" asp-route-id="@userModel.User.Id" 
+                                               class="btn btn-sm btn-outline-info" title="View Posts">
+                                                <i class="bx bx-package"></i>
+                                            </a>
+                                            
+                                            <!-- View Claims -->
+                                            <a asp-action="UserClaims" asp-route-id="@userModel.User.Id" 
+                                               class="btn btn-sm btn-outline-success" title="View Claims">
+                                                <i class="bx bx-list-check"></i>
+                                            </a>
+                                            
+                                            <!-- Dropdown Menu -->
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                        type="button" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <button class="dropdown-item" data-bs-toggle="modal" 
+                                                                data-bs-target="#roleModal@(userModel.User.Id.Replace("-", ""))">
+                                                            <i class="bx bx-user-check me-2"></i>Change Role
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item" data-bs-toggle="modal" 
+                                                                data-bs-target="#resetModal@(userModel.User.Id.Replace("-", ""))">
+                                                            <i class="bx bx-key me-2"></i>Reset Password
+                                                        </button>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    @if (userModel.IsActive)
+                                                    {
+                                                        <li>
+                                                            <form asp-action="DeactivateUser" method="post" class="d-inline">
+                                                                <input type="hidden" name="userId" value="@userModel.User.Id" />
+                                                                <button type="submit" class="dropdown-item text-warning" 
+                                                                        onclick="return confirm('Deactivate this user?')">
+                                                                    <i class="bx bx-user-minus me-2"></i>Deactivate
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    }
+                                                    else
+                                                    {
+                                                        <li>
+                                                            <form asp-action="ActivateUser" method="post" class="d-inline">
+                                                                <input type="hidden" name="userId" value="@userModel.User.Id" />
+                                                                <button type="submit" class="dropdown-item text-success" 
+                                                                        onclick="return confirm('Activate this user?')">
+                                                                    <i class="bx bx-user-plus me-2"></i>Activate
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Modals for this user -->
+                                @await Html.PartialAsync("_UserModals", userModel)
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body text-center py-5">
+                    <i class="bx bx-user-x bx-lg text-muted mb-3"></i>
+                    <h5 class="text-muted">No Users Found</h5>
+                    <p class="text-muted">Try adjusting your search criteria</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Stats Summary -->
+@if (Model.Any())
+{
+    <div class="row mt-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h4>@Model.Count(u => u.Roles.Contains("Admin"))</h4>
+                    <small>Admins</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h4>@Model.Count(u => u.Roles.Contains("Manager"))</h4>
+                    <small>Managers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4>@Model.Count(u => u.Roles.Contains("User"))</h4>
+                    <small>Users</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4>@Model.Count(u => u.IsActive)</h4>
+                    <small>Active</small>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+}
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+</style> 

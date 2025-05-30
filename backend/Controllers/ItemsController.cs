@@ -464,5 +464,77 @@ namespace AspnetCoreMvcFull.Controllers
             TempData["Success"] = "Claim request rejected.";
             return RedirectToAction("Details", new { id = claim.ItemId });
         }
+
+        // GET: My Claims (items with claims submitted to them)
+        public async Task<IActionResult> MyClaims()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            
+            var myItemsWithClaims = await _context.Items
+                .Include(i => i.ClaimRequests)
+                .ThenInclude(c => c.Claimant)
+                .Where(i => i.UserId == user!.Id && i.ClaimRequests.Any())
+                .OrderByDescending(i => i.DateReported)
+                .ToListAsync();
+            
+            return View(myItemsWithClaims);
+        }
+
+        // POST: Escalate to Admin
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EscalateToAdmin(int itemId, string reason)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var item = await _context.Items
+                .Include(i => i.ClaimRequests)
+                .FirstOrDefaultAsync(i => i.Id == itemId && i.UserId == user!.Id);
+            
+            if (item != null && !item.IsEscalatedToAdmin)
+            {
+                item.IsEscalatedToAdmin = true;
+                item.EscalationDate = DateTime.UtcNow;
+                item.EscalationReason = reason;
+                
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Item escalated to admin for review. You'll be notified once a decision is made.";
+            }
+            
+            return RedirectToAction(nameof(MyClaims));
+        }
+
+        // POST: Update Claim Status (enhanced)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateClaimStatus(int claimId, ClaimStatus status)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var claim = await _context.ClaimRequests
+                .Include(c => c.Item)
+                .FirstOrDefaultAsync(c => c.Id == claimId && c.Item.UserId == user!.Id);
+            
+            if (claim != null && !claim.Item.IsEscalatedToAdmin)
+            {
+                claim.Status = status;
+                if (status == ClaimStatus.Approved)
+                {
+                    claim.ApprovedDate = DateTime.UtcNow;
+                    // Auto-reject other pending claims for this item
+                    var otherClaims = await _context.ClaimRequests
+                        .Where(c => c.ItemId == claim.ItemId && c.Id != claimId && c.Status == ClaimStatus.Pending)
+                        .ToListAsync();
+                    
+                    foreach (var otherClaim in otherClaims)
+                    {
+                        otherClaim.Status = ClaimStatus.Rejected;
+                    }
+                }
+                
+                await _context.SaveChangesAsync();
+                TempData["Success"] = $"Claim {status.ToString().ToLower()} successfully.";
+            }
+            
+            return RedirectToAction(nameof(MyClaims));
+        }
     }
 } 

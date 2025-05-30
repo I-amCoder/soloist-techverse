@@ -1,0 +1,210 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.ClaimRequest>
+@{
+    ViewData["Title"] = "Manage Claims";
+    ViewData["container"] = "container-fluid";
+}
+
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="text-dark mb-1">
+                            <i class="bx bx-list-check me-2"></i>Claims Management
+                        </h4>
+                        <p class="mb-0 text-muted">Review and moderate all claim requests</p>
+                    </div>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bx bx-arrow-back me-1"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <i class="bx bx-time bx-lg mb-2 text-warning"></i>
+                <h3 class="text-warning">@Model.Count(c => c.Status == AspnetCoreMvcFull.Models.ClaimStatus.Pending)
+                </h3>
+                <small class="text-muted">Pending</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <i class="bx bx-check bx-lg mb-2 text-success"></i>
+                <h3 class="text-success">@Model.Count(c => c.Status == AspnetCoreMvcFull.Models.ClaimStatus.Approved)
+                </h3>
+                <small class="text-muted">Approved</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <i class="bx bx-x bx-lg mb-2 text-danger"></i>
+                <h3 class="text-danger">@Model.Count(c => c.Status == AspnetCoreMvcFull.Models.ClaimStatus.Rejected)
+                </h3>
+                <small class="text-muted">Rejected</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <i class="bx bx-transfer bx-lg mb-2 text-primary"></i>
+                <h3 class="text-primary">@Model.Count(c => c.Status == AspnetCoreMvcFull.Models.ClaimStatus.HandedOver)
+                </h3>
+                <small class="text-muted">Handed Over</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Claims Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bx bx-list-check me-2"></i>All Claims (@Model.Count())
+                </h5>
+            </div>
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th>Claimant</th>
+                                <th>Owner</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <h6 class="mb-0">@claim.Item.Name</h6>
+                                            <small
+                                                class="badge bg-@(claim.Item.Type == AspnetCoreMvcFull.Models.ItemType.Lost ? "danger" : "success")">
+                                                @claim.Item.Type
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>@claim.Claimant.FirstName @claim.Claimant.LastName</td>
+                                    <td>@claim.Item.User.FirstName @claim.Item.User.LastName</td>
+                                    <td>
+                                        <span class="text-truncate d-block" style="max-width: 200px;" title="@claim.Message">
+                                            @claim.Message
+                                        </span>
+                                    </td>
+                                    <td>@claim.RequestDate.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <span
+                                            class="badge bg-@(claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Pending ? "warning" : 
+                                                                                                           claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Approved ? "success" : 
+                                                                                                           claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.HandedOver ? "primary" : "danger")">
+                                    @claim.Status
+                                </span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                        data-bs-toggle="dropdown">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a asp-controller="Items" asp-action="Details" asp-route-id="@claim.Item.Id"
+                                                class="dropdown-item">
+                                                <i class="bx bx-show me-2"></i>View Item
+                                            </a>
+                                        </li>
+
+                                        @if (claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Pending)
+                                                {
+                                                    <li>
+                                                        <form asp-action="UpdateGlobalClaimStatus" method="post" class="d-inline">
+                                                            <input type="hidden" name="claimId" value="@claim.Id" />
+                                                            <input type="hidden" name="status"
+                                                                value="@AspnetCoreMvcFull.Models.ClaimStatus.Approved" />
+                                                            <button type="submit" class="dropdown-item text-success"
+                                                                onclick="return confirm('Approve this claim?')">
+                                                                <i class="bx bx-check me-2"></i>Approve
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    <li>
+                                                        <form asp-action="UpdateGlobalClaimStatus" method="post" class="d-inline">
+                                                            <input type="hidden" name="claimId" value="@claim.Id" />
+                                                            <input type="hidden" name="status"
+                                                                value="@AspnetCoreMvcFull.Models.ClaimStatus.Rejected" />
+                                                            <button type="submit" class="dropdown-item text-warning"
+                                                                onclick="return confirm('Reject this claim?')">
+                                                                <i class="bx bx-x me-2"></i>Reject
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                }
+
+                                                @if (claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Approved)
+                                                {
+                                                    <li>
+                                                        <form asp-action="UpdateGlobalClaimStatus" method="post" class="d-inline">
+                                                            <input type="hidden" name="claimId" value="@claim.Id" />
+                                                            <input type="hidden" name="status"
+                                                                value="@AspnetCoreMvcFull.Models.ClaimStatus.HandedOver" />
+                                                            <button type="submit" class="dropdown-item text-primary"
+                                                                onclick="return confirm('Mark as handed over?')">
+                                                                <i class="bx bx-transfer me-2"></i>Mark Handed Over
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                }
+
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li>
+                                                    <form asp-action="DeleteGlobalClaim" method="post" class="d-inline">
+                                                        <input type="hidden" name="claimId" value="@claim.Id" />
+                                                        <button type="submit" class="dropdown-item text-danger"
+                                                            onclick="return confirm('Delete this claim permanently?')">
+                                                            <i class="bx bx-trash me-2"></i>Delete
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body text-center py-4">
+                    <i class="bx bx-list-check bx-lg text-muted mb-2"></i>
+                    <p class="text-muted mb-0">No claims found</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

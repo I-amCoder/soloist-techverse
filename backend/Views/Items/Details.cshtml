@@ -208,7 +208,7 @@
                             </div>
                             <p class="text-muted mb-3">@claim.Message</p>
                             
-                            @if (!claim.IsApproved && Model.Status == ItemStatus.Active)
+                            @if (claim.Status == ClaimStatus.Pending && Model.Status == ItemStatus.Active)
                             {
                                 <div class="d-flex gap-2">
                                     <form asp-action="ApproveClaim" method="post" class="d-inline">
@@ -227,7 +227,7 @@
                                     </form>
                                 </div>
                             }
-                            else if (claim.IsApproved)
+                            else if (claim.Status == ClaimStatus.Approved)
                             {
                                 <span class="badge bg-success">Approved</span>
                             }

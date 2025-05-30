@@ -27,14 +27,29 @@ public class DashboardController : Controller
   {
     var user = await _userManager.GetUserAsync(User);
     
+    // Add null check
+    if (user == null)
+    {
+        return RedirectToAction("Login", "Account");
+    }
+
     // Get user's items
     var myLostItems = await _context.Items
-      .Where(i => i.UserId == user!.Id && i.Type == ItemType.Lost && i.Status == ItemStatus.Active)
+      .Where(i => i.UserId == user.Id && i.Type == ItemType.Lost && i.Status == ItemStatus.Active)
       .CountAsync();
       
     var myFoundItems = await _context.Items
-      .Where(i => i.UserId == user!.Id && i.Type == ItemType.Found && i.Status == ItemStatus.Active)
+      .Where(i => i.UserId == user.Id && i.Type == ItemType.Found && i.Status == ItemStatus.Active)
       .CountAsync();
+
+    var myPendingClaims = await _context.ClaimRequests
+        .Where(c => c.ClaimantId == user.Id && c.Status == ClaimStatus.Pending)
+        .CountAsync();
+
+    var claimsOnMyItems = await _context.ClaimRequests
+        .Include(c => c.Item)
+        .Where(c => c.Item.UserId == user.Id && c.Status == ClaimStatus.Pending)
+        .CountAsync();
 
     // Get recent campus activity
     var recentLostItems = await _context.Items
@@ -53,6 +68,8 @@ public class DashboardController : Controller
 
     ViewBag.MyLostCount = myLostItems;
     ViewBag.MyFoundCount = myFoundItems;
+    ViewBag.MyPendingClaims = myPendingClaims;
+    ViewBag.ClaimsOnMyItems = claimsOnMyItems;
     ViewBag.RecentLostItems = recentLostItems;
     ViewBag.RecentFoundItems = recentFoundItems;
     ViewBag.TotalLostItems = await _context.Items.Where(i => i.Type == ItemType.Lost && i.Status == ItemStatus.Active).CountAsync();

@@ -1,0 +1,327 @@
+@model AspnetCoreMvcFull.Models.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    ViewData["container"] = "container-fluid";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Page Header -->
+        <div class="card bg-primary text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title text-white mb-1">🛡️ Admin Dashboard</h4>
+                        <p class="mb-0 opacity-75">Lost & Found Portal Management System</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Statistics" class="btn btn-light">
+                            <i class="bx bx-bar-chart me-1"></i>Statistics
+                        </a>
+                        <a asp-action="Users" class="btn btn-outline-light">
+                            <i class="bx bx-users me-1"></i>Users
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="card-title fw-semibold mb-1">Total Users</div>
+                        <h3 class="card-title mb-2 text-primary">@Model.TotalUsers</h3>
+                        <small class="text-success fw-semibold">
+                            <i class="bx bx-up-arrow-alt"></i>+8.72%
+                        </small>
+                    </div>
+                    <div class="avatar avatar-md">
+                        <div class="avatar-initial bg-primary rounded">
+                            <i class="bx bx-users bx-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="card-title fw-semibold mb-1">Total Items</div>
+                        <h3 class="card-title mb-2 text-success">@Model.TotalItems</h3>
+                        <small class="text-muted">
+                            @Model.LostItemsCount Lost / @Model.FoundItemsCount Found
+                        </small>
+                    </div>
+                    <div class="avatar avatar-md">
+                        <div class="avatar-initial bg-success rounded">
+                            <i class="bx bx-package bx-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="card-title fw-semibold mb-1">Active Items</div>
+                        <h3 class="card-title mb-2 text-warning">@Model.ActiveItems</h3>
+                        <small class="text-muted">
+                            @Model.PendingClaims Pending Claims
+                        </small>
+                    </div>
+                    <div class="avatar avatar-md">
+                        <div class="avatar-initial bg-warning rounded">
+                            <i class="bx bx-time bx-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="card-title fw-semibold mb-1">Resolved</div>
+                        <h3 class="card-title mb-2 text-info">@Model.ResolvedItems</h3>
+                        <small class="text-success fw-semibold">
+                            Success Rate: @(Model.TotalItems > 0 ? Math.Round((double)Model.ResolvedItems /
+                                                        Model.TotalItems * 100, 1) : 0)%
+                        </small>
+                    </div>
+                    <div class="avatar avatar-md">
+                        <div class="avatar-initial bg-info rounded">
+                            <i class="bx bx-check-circle bx-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-lightning me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-action="Items"
+                            class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-package bx-lg mb-2"></i>
+                            <span>Manage Items</span>
+                            <small class="text-muted">View and moderate posts</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-action="Claims"
+                            class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-hand bx-lg mb-2"></i>
+                            <span>Manage Claims</span>
+                            <small class="text-muted">Review claim requests</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-action="Users"
+                            class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-users bx-lg mb-2"></i>
+                            <span>Manage Users</span>
+                            <small class="text-muted">User roles and permissions</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-action="Statistics"
+                            class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-bar-chart bx-lg mb-2"></i>
+                            <span>View Reports</span>
+                            <small class="text-muted">Analytics and insights</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-action="EscalatedItems"
+                            class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-shield bx-lg mb-2"></i>
+                            <span>Escalated Items</span>
+                            <small class="text-muted">Items needing review</small>
+                            @if (ViewBag.EscalatedCount > 0)
+                            {
+                                <span class="badge bg-danger">@ViewBag.EscalatedCount</span>
+                            }
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <!-- Recent Items -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bx bx-time me-2"></i>Recent Items
+                </h5>
+                <a asp-action="Items" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentItems.Any())
+                {
+                    @foreach (var item in Model.RecentItems)
+                    {
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            <div class="avatar avatar-sm me-3">
+                                <span
+                                    class="avatar-initial rounded-circle bg-label-@(item.Type == ItemType.Lost ? "danger" : "success")">
+                                    @(item.Type == ItemType.Lost ? "🔍" : "✅")
+                                </span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">@item.Name</h6>
+                                <small class="text-muted">
+                                    @item.Type by @item.User.FirstName @item.User.LastName
+                                    <span
+                                        class="badge bg-label-@(item.Status == ItemStatus.Active ? "warning" : "secondary") ms-2">
+                                        @item.Status
+                                    </span>
+                                </small>
+                                <div class="small text-muted">
+                                    <i class="bx bx-map me-1"></i>@item.Location
+                                    <i class="bx bx-time me-1 ms-2"></i>@item.DateReported.ToString("MMM dd, HH:mm")
+                                </div>
+                            </div>
+                            <a asp-controller="Items" asp-action="Details" asp-route-id="@item.Id"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="bx bx-show"></i>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bx bx-inbox bx-lg mb-2"></i>
+                        <p class="mb-0">No recent items</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Claims -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bx bx-hand me-2"></i>Recent Claims
+                </h5>
+                <a asp-action="Claims" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentClaims.Any())
+                {
+                    @foreach (var claim in Model.RecentClaims)
+                    {
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            <div class="avatar avatar-sm me-3">
+                                <span
+                                    class="avatar-initial rounded-circle bg-label-@(claim.Status == ClaimStatus.Pending ? "warning" : 
+                                                                                                                                                           claim.Status == ClaimStatus.Approved ? "success" : 
+                                                                                                                                                           claim.Status == ClaimStatus.Rejected ? "danger" : "info")">
+                                    @(claim.Status == ClaimStatus.Pending ? "⏳" :
+                                                                claim.Status == ClaimStatus.Approved ? "✅" :
+                                                                claim.Status == ClaimStatus.Rejected ? "❌" : "🤝")
+                        </span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">@claim.Item.Name</h6>
+                        <small class="text-muted">
+                            Claimed by @claim.Claimant.FirstName @claim.Claimant.LastName
+                            <span
+                                class="badge bg-label-@(claim.Status == ClaimStatus.Pending ? "warning" : 
+                                                                                                                                                claim.Status == ClaimStatus.Approved ? "success" : 
+                                                                                                                                                claim.Status == ClaimStatus.Rejected ? "danger" : "info") ms-2">
+                                @claim.Status
+                            </span>
+                        </small>
+                        <div class="small text-muted">
+                            <i class="bx bx-time me-1"></i>@claim.RequestDate.ToString("MMM dd, HH:mm")
+                        </div>
+                    </div>
+                    <a asp-controller="Items" asp-action="Details" asp-route-id="@claim.Item.Id"
+                        class="btn btn-sm btn-outline-primary">
+                        <i class="bx bx-show"></i>
+                    </a>
+                </div>
+                                }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bx bx-inbox bx-lg mb-2"></i>
+                        <p class="mb-0">No recent claims</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Distribution Chart -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-pie-chart me-2"></i>Items by Category
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var category in Model.ItemsByCategory)
+                    {
+                        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                            <div class="text-center">
+                                <div class="avatar avatar-lg mx-auto mb-2">
+                                    <span class="avatar-initial rounded-circle bg-label-primary">
+                                        @(category.Key == ItemCategory.Electronics ? "📱" :
+                                                                            category.Key == ItemCategory.Documents ? "📄" :
+                                                                            category.Key == ItemCategory.Clothing ? "👕" :
+                                                                            category.Key == ItemCategory.Books ? "📚" :
+                                                                            category.Key == ItemCategory.Accessories ? "👜" : "📦")
+                                </span>
+                            </div>
+                            <h5 class="mb-0">@category.Value</h5>
+                            <small class="text-muted">@category.Key</small>
+                        </div>
+                    </div>
+                                        }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

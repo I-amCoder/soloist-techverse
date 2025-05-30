@@ -1,0 +1,178 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.Item>
+@{
+    ViewData["Title"] = "Manage My Claims";
+    ViewData["container"] = "container-fluid";
+}
+
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="text-dark mb-1">
+                            <i class="bx bx-clipboard me-2"></i>Manage Item Claims
+                        </h4>
+                        <p class="mb-0 text-muted">Review and manage claims for your posted items</p>
+                    </div>
+                    <a asp-action="MyItems" class="btn btn-secondary">
+                        <i class="bx bx-arrow-back me-1"></i>My Items
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@foreach (var item in Model.Where(i => i.ClaimRequests.Any()))
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm @(item.ClaimRequests.Count() > 1 && !item.IsEscalatedToAdmin ? "border-warning" : "")">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">@item.Name</h5>
+                            <small class="text-muted">@item.ClaimRequests.Count() claims submitted</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            @if (item.ClaimRequests.Count() > 1 && !item.IsEscalatedToAdmin)
+                            {
+                                <span class="badge bg-warning">
+                                    <i class="bx bx-exclamation-triangle me-1"></i>Multiple Claims
+                                </span>
+                            }
+                            @if (item.IsEscalatedToAdmin)
+                            {
+                                <span class="badge bg-info">
+                                    <i class="bx bx-shield me-1"></i>Admin Review
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    @if (item.IsEscalatedToAdmin)
+                    {
+                        <div class="alert alert-info">
+                            <i class="bx bx-info-circle me-2"></i>
+                            <strong>Escalated to Admin:</strong> @item.EscalationReason
+                            <br><small class="text-muted">Escalated on @item.EscalationDate?.ToString("MMM dd, yyyy")</small>
+                            @if (!string.IsNullOrEmpty(item.AdminNotes))
+                            {
+                                <br><strong>Admin Notes:</strong> @item.AdminNotes
+                            }
+                        </div>
+                    }
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Claimant</th>
+                                    <th>Message</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var claim in item.ClaimRequests.OrderBy(c => c.RequestDate))
+                                {
+                                    <tr class="@(claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Approved ? "table-success" : 
+                                               claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Rejected ? "table-danger" : "")">
+                                        <td>
+                                            <div>
+                                                <strong>@claim.Claimant.FirstName @claim.Claimant.LastName</strong>
+                                                <br><small class="text-muted">@claim.Claimant.Email</small>
+                                            </div>
+                                        </td>
+                                        <td>@claim.Message</td>
+                                        <td>@claim.RequestDate.ToString("MMM dd")</td>
+                                        <td>
+                                            <span class="badge bg-@(claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Pending ? "warning" : 
+                                                                   claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Approved ? "success" : 
+                                                                   claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.HandedOver ? "primary" : "danger")">
+                                                @claim.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (!item.IsEscalatedToAdmin && claim.Status == AspnetCoreMvcFull.Models.ClaimStatus.Pending)
+                                            {
+                                                <div class="d-flex gap-1">
+                                                    <form asp-controller="Items" asp-action="UpdateClaimStatus" method="post" class="d-inline">
+                                                        <input type="hidden" name="claimId" value="@claim.Id" />
+                                                        <input type="hidden" name="status" value="@AspnetCoreMvcFull.Models.ClaimStatus.Approved" />
+                                                        <button type="submit" class="btn btn-sm btn-success" title="Approve">
+                                                            <i class="bx bx-check"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form asp-controller="Items" asp-action="UpdateClaimStatus" method="post" class="d-inline">
+                                                        <input type="hidden" name="claimId" value="@claim.Id" />
+                                                        <input type="hidden" name="status" value="@AspnetCoreMvcFull.Models.ClaimStatus.Rejected" />
+                                                        <button type="submit" class="btn btn-sm btn-danger" title="Reject">
+                                                            <i class="bx bx-x"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Escalation Actions -->
+                    @if (!item.IsEscalatedToAdmin && item.ClaimRequests.Count() > 1)
+                    {
+                        <div class="mt-3 p-3 bg-warning bg-opacity-10 border border-warning rounded">
+                            <h6 class="text-warning">
+                                <i class="bx bx-exclamation-triangle me-2"></i>Multiple Claims Detected
+                            </h6>
+                            <p class="mb-3">Having trouble deciding? Let an admin review the claims and make a decision for you.</p>
+                            
+                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#escalateModal@(item.Id)">
+                                <i class="bx bx-shield me-2"></i>Request Admin Review
+                            </button>
+                        </div>
+                        
+                        <!-- Escalation Modal -->
+                        <div class="modal fade" id="escalateModal@(item.Id)" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form asp-controller="Items" asp-action="EscalateToAdmin" method="post">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Request Admin Review</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="itemId" value="@item.Id" />
+                                            <div class="mb-3">
+                                                <label class="form-label">Reason for escalation</label>
+                                                <textarea name="reason" class="form-control" rows="3" required 
+                                                          placeholder="Explain why you need admin help (e.g., multiple valid claims, unclear ownership, etc.)"></textarea>
+                                            </div>
+                                            <div class="alert alert-info">
+                                                <i class="bx bx-info-circle me-2"></i>
+                                                An admin will review all claims and make a decision. You'll be notified once resolved.
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-warning">
+                                                <i class="bx bx-shield me-2"></i>Request Admin Review
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+} 
