@@ -1,0 +1,194 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.Item>
+@{
+    ViewData["Title"] = "My Items";
+    ViewData["container"] = "container-fluid";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Page Header -->
+        <div class="card bg-warning text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title text-white mb-1">📦 My Items</h4>
+                        <p class="mb-0 opacity-75">Manage your posted lost and found items</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="PostLost" class="btn btn-light">
+                            <i class="bx bx-plus me-1"></i>Report Lost
+                        </a>
+                        <a asp-action="PostFound" class="btn btn-outline-light">
+                            <i class="bx bx-plus me-1"></i>Report Found
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bx bx-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- My Lost Items -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bx bx-search-alt text-danger me-2"></i>My Lost Items
+                </h5>
+                <span class="badge bg-danger">@ViewBag.LostItems.Count items</span>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.LostItems != null && ((List<AspnetCoreMvcFull.Models.Item>)ViewBag.LostItems).Any())
+                {
+                    <div class="row">
+                        @foreach (var item in (List<AspnetCoreMvcFull.Models.Item>)ViewBag.LostItems)
+                        {
+                            <div class="col-lg-4 col-md-6 mb-3">
+                                <div class="card h-100">
+                                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                                    {
+                                        <img src="@item.ImagePath" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@item.Name">
+                                    }
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-1">@item.Name</h6>
+                                            <span class="badge bg-label-@(item.Status == ItemStatus.Active ? "danger" : "success")">
+                                                @item.Status
+                                            </span>
+                                        </div>
+                                        <p class="card-text text-muted small mb-2">@item.Description</p>
+                                        <div class="small text-muted mb-3">
+                                            <div><i class="bx bx-map me-1"></i>@item.Location</div>
+                                            <div><i class="bx bx-calendar me-1"></i>@item.DateLostOrFound?.ToString("MMM dd, yyyy")</div>
+                                            <div><i class="bx bx-time me-1"></i>Posted @item.DateReported.ToString("MMM dd, yyyy")</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-flex gap-1">
+                                            @if (item.Status == ItemStatus.Active)
+                                            {
+                                                <form asp-action="MarkAsReturned" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success" 
+                                                            onclick="return confirm('Mark this item as found/returned?')">
+                                                        <i class="bx bx-check me-1"></i>Mark Found
+                                                    </button>
+                                                </form>
+                                            }
+                                            <form asp-action="DeleteItem" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="return confirm('Are you sure you want to delete this item?')">
+                                                    <i class="bx bx-trash me-1"></i>Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="bx bx-search-alt display-4 text-muted mb-3"></i>
+                        <h6 class="text-muted">No lost items posted</h6>
+                        <p class="text-muted mb-3">You haven't reported any lost items yet.</p>
+                        <a asp-action="PostLost" class="btn btn-danger">
+                            <i class="bx bx-plus me-1"></i>Report Lost Item
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- My Found Items -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bx bx-package text-success me-2"></i>My Found Items
+                </h5>
+                <span class="badge bg-success">@ViewBag.FoundItems.Count items</span>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.FoundItems != null && ((List<AspnetCoreMvcFull.Models.Item>)ViewBag.FoundItems).Any())
+                {
+                    <div class="row">
+                        @foreach (var item in (List<AspnetCoreMvcFull.Models.Item>)ViewBag.FoundItems)
+                        {
+                            <div class="col-lg-4 col-md-6 mb-3">
+                                <div class="card h-100">
+                                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                                    {
+                                        <img src="@item.ImagePath" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@item.Name">
+                                    }
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-1">@item.Name</h6>
+                                            <span class="badge bg-label-@(item.Status == ItemStatus.Active ? "success" : "primary")">
+                                                @item.Status
+                                            </span>
+                                        </div>
+                                        <p class="card-text text-muted small mb-2">@item.Description</p>
+                                        <div class="small text-muted mb-3">
+                                            <div><i class="bx bx-map me-1"></i>@item.Location</div>
+                                            <div><i class="bx bx-calendar me-1"></i>@item.DateLostOrFound?.ToString("MMM dd, yyyy")</div>
+                                            <div><i class="bx bx-time me-1"></i>Posted @item.DateReported.ToString("MMM dd, yyyy")</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-flex gap-1">
+                                            @if (item.Status == ItemStatus.Active)
+                                            {
+                                                <form asp-action="MarkAsReturned" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-primary" 
+                                                            onclick="return confirm('Mark this item as returned to owner?')">
+                                                        <i class="bx bx-check me-1"></i>Mark Returned
+                                                    </button>
+                                                </form>
+                                            }
+                                            <form asp-action="DeleteItem" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="return confirm('Are you sure you want to delete this item?')">
+                                                    <i class="bx bx-trash me-1"></i>Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="bx bx-package display-4 text-muted mb-3"></i>
+                        <h6 class="text-muted">No found items posted</h6>
+                        <p class="text-muted mb-3">You haven't reported any found items yet.</p>
+                        <a asp-action="PostFound" class="btn btn-success">
+                            <i class="bx bx-plus me-1"></i>Report Found Item
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div> 

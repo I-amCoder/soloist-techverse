@@ -1,0 +1,210 @@
+@model AspnetCoreMvcFull.Models.ViewModels.PostItemViewModel
+@{
+    ViewData["Title"] = "Report Lost Item";
+}
+
+@section PageStyles {
+    <style>
+        .form-floating>.form-control:focus~label,
+        .form-floating>.form-control:not(:placeholder-shown)~label {
+            opacity: .65;
+            transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 4px;
+        }
+    </style>
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Header Card -->
+        <div class="card bg-danger text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title text-white mb-1">📝 Report Lost Item</h4>
+                        <p class="mb-0 opacity-75">Help us help you find your lost belongings</p>
+                    </div>
+                    <div>
+                        <a asp-action="Lost" class="btn btn-light">
+                            <i class="bx bx-arrow-back me-1"></i>Back to Lost Items
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-edit me-2"></i>Item Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="PostLost" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <!-- Item Name -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <input asp-for="Name" class="form-control" id="itemName" placeholder="Item Name">
+                                <label for="itemName">Item Name *</label>
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <textarea asp-for="Description" class="form-control" id="description"
+                                    placeholder="Describe your lost item..." style="height: 120px;"></textarea>
+                                <label for="description">Description *</label>
+                            </div>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                            <div class="form-text">Include details like color, brand, size, distinctive features</div>
+                        </div>
+                    </div>
+
+                    <!-- Category & Location -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select asp-for="Category" class="form-select" id="category">
+                                    <option value="">Select Category</option>
+                                    @foreach (var category in ViewBag.Categories)
+                                    {
+                                        <option value="@category">@category</option>
+                                    }
+                                </select>
+                                <label for="category">Category *</label>
+                            </div>
+                            <span asp-validation-for="Category" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Location" class="form-control" id="location"
+                                    placeholder="Where did you lose it?">
+                                <label for="location">Last Seen Location *</label>
+                            </div>
+                            <span asp-validation-for="Location" class="text-danger small"></span>
+                            <div class="form-text">e.g., Library 2nd Floor, Cafeteria, Parking Lot A</div>
+                        </div>
+                    </div>
+
+                    <!-- Date Lost & Contact -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="DateLostOrFound" type="date" class="form-control" id="dateLost">
+                                <label for="dateLost">Date Lost (Optional)</label>
+                            </div>
+                            <span asp-validation-for="DateLostOrFound" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="ContactInfo" class="form-control" id="contact"
+                                    placeholder="Your contact information">
+                                <label for="contact">Contact Information *</label>
+                            </div>
+                            <span asp-validation-for="ContactInfo" class="text-danger small"></span>
+                            <div class="form-text">Phone number, email, or room number</div>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label class="form-label">Item Photo (Optional)</label>
+                            <input asp-for="Image" type="file" class="form-control" accept="image/*" id="imageUpload">
+                            <span asp-validation-for="Image" class="text-danger small"></span>
+                            <div class="form-text">Upload a clear photo to help others identify your item</div>
+                            <div id="imagePreview" class="image-preview" style="display: none;">
+                                <img id="previewImg" src="" alt="Preview">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Important Notice -->
+                    <div class="alert alert-info">
+                        <div class="alert-body">
+                            <h6 class="alert-heading mb-2">
+                                <i class="bx bx-info-circle me-1"></i>Important Notice
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Provide accurate information to help others identify your item</li>
+                                <li>Your contact information will only be visible to users who want to help</li>
+                                <li>You'll receive notifications if someone reports finding your item</li>
+                                <li>Please check the <strong>Found Items</strong> section regularly</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bx bx-plus me-1"></i>Report Lost Item
+                                </button>
+                                <a asp-action="Lost" class="btn btn-outline-secondary">
+                                    <i class="bx bx-x me-1"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Image Preview
+        document.getElementById('imageUpload').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // Auto-populate current date
+        document.addEventListener('DOMContentLoaded', function () {
+            const dateInput = document.getElementById('dateLost');
+            if (!dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        });
+    </script>
+}

@@ -1,0 +1,235 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.Item>
+@{
+    ViewData["Title"] = "Lost Items";
+    ViewData["container"] = "container-fluid";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Page Header - Using Sneat Style -->
+        <div class="card bg-primary text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title text-white mb-1">🔍 Lost Items Portal</h4>
+                        <p class="mb-0 opacity-75">Help fellow students recover their lost belongings</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="PostLost" class="btn btn-light">
+                            <i class="bx bx-plus me-1"></i>Report Lost Item
+                        </a>
+                        <a asp-action="Found" class="btn btn-outline-light">
+                            <i class="bx bx-search me-1"></i>Found Items
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Card - Sneat Style -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bx bx-filter-alt me-2"></i>Filters
+                </h5>
+                <small class="text-muted">@Model.Count() items found</small>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="text" name="search" class="form-control" id="searchInput"
+                                placeholder="Search items..." value="@ViewBag.SearchTerm">
+                            <label for="searchInput">Search Items</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select name="category" class="form-select" id="categorySelect">
+                                <option value="">All Categories</option>
+                                @foreach (var category in ViewBag.Categories)
+                                {
+                                    <option value="@category" selected="@(ViewBag.SelectedCategory == category.ToString())">
+                                        @category
+                                    </option>
+                                }
+                            </select>
+                            <label for="categorySelect">Category</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <input type="text" name="location" class="form-control" id="locationInput"
+                                placeholder="Location..." value="@ViewBag.SelectedLocation">
+                            <label for="locationInput">Location</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="btn-group w-100" role="group" style="height: 58px;">
+                            <button type="submit" class="btn btn-primary h-100">
+                                <i class="bx bx-search"></i>
+                            </button>
+                            <a asp-action="Lost" class="btn btn-outline-secondary h-100">
+                                <i class="bx bx-refresh"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Alert - Sneat Style -->
+@if (TempData["Success"] != null)
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bx bx-check-circle me-2"></i>
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Items Grid -->
+<div class="row">
+    @if (Model.Any())
+    {
+        @foreach (var item in Model)
+        {
+            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                <div class="card h-100">
+                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                    {
+                        <img src="@item.ImagePath" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="bx bx-image text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                    }
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@item.Name</h5>
+                        <p class="card-text text-muted flex-grow-1">@item.Description</p>
+
+                        <!-- Badges - Sneat Style -->
+                        <div class="mb-3">
+                            <span class="badge bg-label-danger me-1">@item.Category</span>
+                            <span class="badge bg-label-secondary">@item.Location</span>
+                        </div>
+
+                        <!-- Meta Info -->
+                        <div class="mb-3">
+                            <small class="text-muted d-block">
+                                <i class="bx bx-calendar me-1"></i>Lost: @item.DateLostOrFound?.ToString("MMM dd, yyyy")
+                            </small>
+                            <small class="text-muted d-block">
+                                <i class="bx bx-user me-1"></i>By: @item.User.FirstName @item.User.LastName
+                            </small>
+                            <small class="text-muted d-block">
+                                <i class="bx bx-time me-1"></i>@item.DateReported.ToString("MMM dd")
+                            </small>
+                        </div>
+
+                        <!-- Action Button -->
+                        <div class="card-footer">
+                            <div class="d-flex gap-2">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary btn-sm flex-fill">
+                                    <i class="bx bx-show me-1"></i>View Details
+                                </a>
+                                @if (item.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                                {
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-success btn-sm">
+                                        <i class="bx bx-hand me-1"></i>Claim
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="misc-wrapper">
+                        <i class="bx bx-search-alt-2 display-1 text-muted mb-4"></i>
+                        <h4 class="mb-2 mx-2">No Lost Items Found!</h4>
+                        <p class="mb-4 mx-2">
+                            No items match your search criteria.<br>
+                            Try adjusting your filters or be the first to report a lost item.
+                        </p>
+                        <a asp-action="PostLost" class="btn btn-primary">
+                            <i class="bx bx-plus me-1"></i>Report Lost Item
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Contact Modal - Sneat Style -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bx bx-phone me-2"></i>Contact Information
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <div class="avatar avatar-lg mx-auto mb-3">
+                        <span class="avatar-initial rounded-circle bg-label-primary">
+                            <i class="bx bx-package"></i>
+                        </span>
+                    </div>
+                    <h6 id="modal-item-name" class="mb-1"></h6>
+                    <small class="text-muted">Posted by: <span id="modal-user-name"></span></small>
+                </div>
+
+                <div class="alert alert-primary">
+                    <div class="alert-body">
+                        <span class="fw-medium">Contact Details:</span><br>
+                        <span id="modal-contact-info"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const contactModal = document.getElementById('contactModal');
+            contactModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const contact = button.getAttribute('data-contact');
+                const item = button.getAttribute('data-item');
+                const user = button.getAttribute('data-user');
+
+                document.getElementById('modal-item-name').textContent = item;
+                document.getElementById('modal-user-name').textContent = user;
+                document.getElementById('modal-contact-info').textContent = contact;
+            });
+        });
+    </script>
+}

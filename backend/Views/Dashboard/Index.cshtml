@@ -1,0 +1,228 @@
+@{
+  ViewData["Title"] = "Dashboard";
+}
+
+<!-- Welcome Header -->
+<div class="row">
+  <div class="col-12">
+    <div class="card bg-primary text-white mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="card-title text-white mb-1">👋 Welcome Back!</h4>
+            <p class="mb-0 opacity-75">Lost & Found Community Portal</p>
+          </div>
+          <div class="d-none d-md-block">
+            <i class="bx bx-home-circle display-4 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="bx bx-zap me-2"></i>Quick Actions
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Report Lost Item -->
+          <div class="col-lg-3 col-md-6">
+            <a asp-controller="Items" asp-action="PostLost"
+              class="card bg-danger text-white text-decoration-none h-100">
+              <div class="card-body text-center">
+                <i class="bx bx-search-alt-2 display-4 mb-3"></i>
+                <h6 class="text-white mb-2">Report Lost Item</h6>
+                <small class="opacity-75">Lost something? Let others help you find it</small>
+              </div>
+            </a>
+          </div>
+
+          <!-- Report Found Item -->
+          <div class="col-lg-3 col-md-6">
+            <a asp-controller="Items" asp-action="PostFound"
+              class="card bg-success text-white text-decoration-none h-100">
+              <div class="card-body text-center">
+                <i class="bx bx-package display-4 mb-3"></i>
+                <h6 class="text-white mb-2">Report Found Item</h6>
+                <small class="opacity-75">Found something? Help reunite it with its owner</small>
+              </div>
+            </a>
+          </div>
+
+          <!-- Browse Lost Items -->
+          <div class="col-lg-3 col-md-6">
+            <a asp-controller="Items" asp-action="Lost" class="card bg-info text-white text-decoration-none h-100">
+              <div class="card-body text-center">
+                <i class="bx bx-list-ul display-4 mb-3"></i>
+                <h6 class="text-white mb-2">Browse Lost Items</h6>
+                <small class="opacity-75">See what items people are looking for</small>
+              </div>
+            </a>
+          </div>
+
+          <!-- Browse Found Items -->
+          <div class="col-lg-3 col-md-6">
+            <a asp-controller="Items" asp-action="Found" class="card bg-warning text-white text-decoration-none h-100">
+              <div class="card-body text-center">
+                <i class="bx bx-check-circle display-4 mb-3"></i>
+                <h6 class="text-white mb-2">Browse Found Items</h6>
+                <small class="opacity-75">Check if someone found your lost item</small>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity Section -->
+<div class="row">
+  <!-- Recent Lost Items -->
+  <div class="col-lg-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+          <i class="bx bx-time-five me-2 text-danger"></i>Recent Lost Items
+        </h6>
+        <a asp-controller="Items" asp-action="Lost" class="btn btn-sm btn-outline-danger">View All</a>
+      </div>
+      <div class="card-body">
+        @if (ViewBag.RecentLostItems != null && ((List<AspnetCoreMvcFull.Models.Item>)ViewBag.RecentLostItems).Any())
+        {
+          <div class="list-group list-group-flush">
+            @foreach (var item in (List<AspnetCoreMvcFull.Models.Item>)ViewBag.RecentLostItems)
+            {
+              <div class="list-group-item border-0 px-0">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="mb-1">@item.Name</h6>
+                    <p class="mb-1 text-muted small">@item.Description.Substring(0, Math.Min(50, item.Description.Length))...</p>
+                    <small class="text-muted">@item.Location • @item.DateLostOrFound?.ToString("MMM dd")</small>
+                  </div>
+                  <span class="badge bg-label-danger">Lost</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+        else
+        {
+          <div class="text-center py-4 text-muted">
+            <i class="bx bx-search display-4 mb-2"></i>
+            <p class="mb-0">No recent lost items</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Found Items -->
+  <div class="col-lg-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+          <i class="bx bx-check me-2 text-success"></i>Recent Found Items
+        </h6>
+        <a asp-controller="Items" asp-action="Found" class="btn btn-sm btn-outline-success">View All</a>
+      </div>
+      <div class="card-body">
+        @if (ViewBag.RecentFoundItems != null && ((List<AspnetCoreMvcFull.Models.Item>)ViewBag.RecentFoundItems).Any())
+        {
+          <div class="list-group list-group-flush">
+            @foreach (var item in (List<AspnetCoreMvcFull.Models.Item>)ViewBag.RecentFoundItems)
+            {
+              <div class="list-group-item border-0 px-0">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="mb-1">@item.Name</h6>
+                    <p class="mb-1 text-muted small">@item.Description.Substring(0, Math.Min(50, item.Description.Length))...</p>
+                    <small class="text-muted">@item.Location • @item.DateLostOrFound?.ToString("MMM dd")</small>
+                  </div>
+                  <span class="badge bg-label-success">Found</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+        else
+        {
+          <div class="text-center py-4 text-muted">
+            <i class="bx bx-package display-4 mb-2"></i>
+            <p class="mb-0">No recent found items</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row">
+  <div class="col-lg-3 col-md-6 mb-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="avatar avatar-lg mx-auto mb-3">
+          <span class="avatar-initial rounded-circle bg-label-danger">
+            <i class="bx bx-search-alt-2 bx-sm"></i>
+          </span>
+        </div>
+        <span class="fw-semibold d-block mb-1">Total Lost</span>
+        <h3 class="card-title mb-2">@ViewBag.TotalLostItems</h3>
+        <small class="text-muted">Items reported lost</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6 mb-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="avatar avatar-lg mx-auto mb-3">
+          <span class="avatar-initial rounded-circle bg-label-success">
+            <i class="bx bx-package bx-sm"></i>
+          </span>
+        </div>
+        <span class="fw-semibold d-block mb-1">Total Found</span>
+        <h3 class="card-title mb-2">@ViewBag.TotalFoundItems</h3>
+        <small class="text-muted">Items reported found</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6 mb-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="avatar avatar-lg mx-auto mb-3">
+          <span class="avatar-initial rounded-circle bg-label-info">
+            <i class="bx bx-check-circle bx-sm"></i>
+          </span>
+        </div>
+        <span class="fw-semibold d-block mb-1">Reunited</span>
+        <h3 class="card-title mb-2">0</h3>
+        <small class="text-muted">Successful matches</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6 mb-4">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="avatar avatar-lg mx-auto mb-3">
+          <span class="avatar-initial rounded-circle bg-label-warning">
+            <i class="bx bx-user bx-sm"></i>
+          </span>
+        </div>
+        <span class="fw-semibold d-block mb-1">My Items</span>
+        <h3 class="card-title mb-2">@((int)ViewBag.MyLostCount + (int)ViewBag.MyFoundCount)</h3>
+        <small class="text-muted">Items you've posted</small>
+      </div>
+    </div>
+  </div>
+</div>

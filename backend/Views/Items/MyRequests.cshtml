@@ -1,0 +1,237 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.ClaimRequest>
+@{
+    ViewData["Title"] = "My Claim Requests";
+    ViewData["container"] = "container-fluid";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Page Header -->
+        <div class="card bg-info text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title text-white mb-1">📋 My Claim Requests</h4>
+                        <p class="mb-0 opacity-75">Track your submitted claim requests and their status</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Lost" class="btn btn-light">
+                            <i class="bx bx-search me-1"></i>Browse Lost Items
+                        </a>
+                        <a asp-action="Found" class="btn btn-outline-light">
+                            <i class="bx bx-package me-1"></i>Browse Found Items
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bx bx-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bx bx-list-ul me-2"></i>Your Claim Requests
+                </h5>
+                <span class="badge bg-info">@Model.Count() requests</span>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Type</th>
+                                    <th>Owner</th>
+                                    <th>Request Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var request in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(request.Item.ImagePath))
+                                                {
+                                                    <img src="@request.Item.ImagePath" alt="@request.Item.Name" class="rounded me-3"
+                                                        style="width: 50px; height: 50px; object-fit: cover;">
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center"
+                                                        style="width: 50px; height: 50px;">
+                                                        <i class="bx bx-image text-muted"></i>
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <h6 class="mb-0">@request.Item.Name</h6>
+                                                    <small class="text-muted">@request.Item.Category</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span
+                                                class="badge bg-label-@(request.Item.Type == ItemType.Lost ? "danger" : "success")">
+                                                @request.Item.Type
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div class="fw-medium">@request.Item.User.UserName</div>
+                                                <small class="text-muted">@request.Item.ContactInfo</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div>@request.RequestDate.ToString("MMM dd, yyyy")</div>
+                                                <small class="text-muted">@request.RequestDate.ToString("HH:mm")</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (request.IsApproved)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="bx bx-check me-1"></i>Approved
+                                                </span>
+                                            }
+                                            else if (request.Item.Status == ItemStatus.Claimed)
+                                            {
+                                                <span class="badge bg-warning">
+                                                    <i class="bx bx-time me-1"></i>Item Claimed
+                                                </span>
+                                            }
+                                            else if (request.Item.Status == ItemStatus.Resolved)
+                                            {
+                                                <span class="badge bg-secondary">
+                                                    <i class="bx bx-check-circle me-1"></i>Resolved
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">
+                                                    <i class="bx bx-clock me-1"></i>Pending
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                    data-bs-toggle="dropdown">
+                                                    Actions
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a asp-action="Details" asp-route-id="@request.ItemId"
+                                                            class="dropdown-item">
+                                                            <i class="bx bx-show me-2"></i>View Item
+                                                        </a>
+                                                    </li>
+                                                    @if (request.IsApproved)
+                                                    {
+                                                        <li>
+                                                            <a href="mailto:@request.Item.ContactInfo" class="dropdown-item">
+                                                                <i class="bx bx-envelope me-2"></i>Contact Owner
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Expandable Message Row -->
+                                    <tr class="border-0">
+                                        <td colspan="6" class="pt-0">
+                                            <div class="collapse" id="message-@request.Id">
+                                                <div class="card card-body bg-light border-0 mt-2">
+                                                    <h6 class="mb-2">Your Message:</h6>
+                                                    <p class="text-muted mb-0">@request.Message</p>
+                                                </div>
+                                            </div>
+                                            <button class="btn btn-sm btn-link text-decoration-none p-0" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#message-@request.Id">
+                                                <small>View Message</small>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="bx bx-clipboard display-4 text-muted mb-3"></i>
+                        <h6 class="text-muted mb-2">No claim requests submitted</h6>
+                        <p class="text-muted mb-4">You haven't submitted any claim requests yet. Browse items to find what
+                            you're looking for!</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a asp-action="Lost" class="btn btn-primary">
+                                <i class="bx bx-search me-1"></i>Browse Lost Items
+                            </a>
+                            <a asp-action="Found" class="btn btn-success">
+                                <i class="bx bx-package me-1"></i>Browse Found Items
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats Card -->
+@if (Model.Any())
+{
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="d-flex flex-column">
+                                <span class="fw-semibold">Total Requests</span>
+                                <h4 class="mb-0 text-primary">@Model.Count()</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex flex-column">
+                                <span class="fw-semibold">Approved</span>
+                                <h4 class="mb-0 text-success">@Model.Count(r => r.IsApproved)</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex flex-column">
+                                <span class="fw-semibold">Pending</span>
+                                <h4 class="mb-0 text-warning">@Model.Count(r => !r.IsApproved && r.Item.Status ==
+                                                                    ItemStatus.Active)</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex flex-column">
+                            <span class="fw-semibold">Lost Items</span>
+                            <h4 class="mb-0 text-danger">@Model.Count(r => r.Item.Type == ItemType.Lost)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}

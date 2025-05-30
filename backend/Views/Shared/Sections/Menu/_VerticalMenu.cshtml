@@ -1,0 +1,165 @@
+@{
+  TempData.Keep();
+  string? currentPage = ViewContext.HttpContext.Request.Path;
+}
+
+<!-- Menu -->
+@* ! Do this simple *@
+<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+
+  @* ! Hide app brand if navbar-full *@
+  <div class='app-brand demo'>
+    <a asp-controller="Dashboard" asp-action="Index" class="app-brand-link">
+      <span class="app-brand-logo demo">
+        @await Html.PartialAsync("../_Partials/_Macros")
+      </span>
+      <span class="app-brand-text demo menu-text fw-bold ms-2">@TempData.Peek("appName")</span>
+    </a>
+  </div>
+
+  <div class="menu-inner-shadow"></div>
+
+  @* ! Full version menu-items *@
+  <ul class="menu-inner py-1">
+    <!-- My Dashboard -->
+    <li class='menu-item@(currentPage.EndsWith("/") || currentPage.StartsWith("/Dashboard/Index") ? " active" : "")'>
+      <a asp-controller="Dashboard" asp-action="Index" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-home-smile"></i>
+        <div data-i18n="My Dashboard">My Dashboard</div>
+      </a>
+    </li>
+
+    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+    {
+      <!-- Manager Dashboard -->
+      <li class='menu-item@(currentPage.StartsWith("/Dashboard/Manager") ? " active" : "")'>
+        <a asp-controller="Dashboard" asp-action="Manager" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-line-chart"></i>
+          <div data-i18n="Manager Dashboard">Manager Dashboard</div>
+        </a>
+      </li>
+    }
+
+    @if (User.IsInRole("Admin"))
+    {
+      <!-- Admin Dashboard -->
+      <li class='menu-item@(currentPage.StartsWith("/Dashboard/Admin") ? " active" : "")'>
+        <a asp-controller="Dashboard" asp-action="Admin" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-shield"></i>
+          <div data-i18n="Admin Dashboard">Admin Dashboard</div>
+        </a>
+      </li>
+    }
+
+    <!-- Apps & Pages -->
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Lost &amp; Found Portal</span>
+    </li>
+
+    <!-- Lost & Found - Always Open -->
+    <li class='menu-item active open'>
+      <a href="javascript:void(0);" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-search"></i>
+        <div data-i18n="Lost & Found">Lost & Found</div>
+      </a>
+      <ul class="menu-sub">
+        <li class='menu-item@(currentPage.Contains("/Items/Lost") ? " active" : "")'>
+          <a asp-controller="Items" asp-action="Lost" class="menu-link">
+            <div data-i18n="Lost Items">🔍 Lost Items</div>
+          </a>
+        </li>
+        <li class='menu-item@(currentPage.Contains("/Items/Found") ? " active" : "")'>
+          <a asp-controller="Items" asp-action="Found" class="menu-link">
+            <div data-i18n="Found Items">✅ Found Items</div>
+          </a>
+        </li>
+        <li class='menu-item@(currentPage.Contains("/Items/PostLost") ? " active" : "")'>
+          <a asp-controller="Items" asp-action="PostLost" class="menu-link">
+            <div data-i18n="Report Lost">📝 Report Lost</div>
+          </a>
+        </li>
+        <li class='menu-item@(currentPage.Contains("/Items/PostFound") ? " active" : "")'>
+          <a asp-controller="Items" asp-action="PostFound" class="menu-link">
+            <div data-i18n="Report Found">📋 Report Found</div>
+          </a>
+        </li>
+        <li class='menu-item@(currentPage.Contains("/Items/MyItems") ? " active" : "")'>
+          <a asp-controller="Items" asp-action="MyItems" class="menu-link">
+            <div data-i18n="My Items">📦 My Items</div>
+          </a>
+        </li>
+        <li class='menu-item@(currentPage.Contains("/Items/MyRequests") ? " active" : "")'>
+          <a asp-controller="Items" asp-action="MyRequests" class="menu-link">
+            <div data-i18n="My Requests">📋 My Requests</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    @if (User.IsInRole("Admin"))
+    {
+      <!-- Admin Section -->
+      <li class="menu-header small text-uppercase">
+        <span class="menu-header-text">Administration</span>
+      </li>
+
+      <li class='menu-item@(currentPage.StartsWith("/Admin/") ? " active open" : "")'>
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+          <i class="menu-icon tf-icons bx bx-shield"></i>
+          <div data-i18n="Admin Panel">Admin Panel</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item">
+            <a asp-controller="Admin" asp-action="Users" class="menu-link">
+              <div data-i18n="Manage Users">👥 Manage Users</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a asp-controller="Admin" asp-action="Items" class="menu-link">
+              <div data-i18n="Manage Items">📋 Manage Items</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a asp-controller="Admin" asp-action="Claims" class="menu-link">
+              <div data-i18n="Manage Claims">⚖️ Manage Claims</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a asp-controller="Admin" asp-action="Reports" class="menu-link">
+              <div data-i18n="Reports">📊 Reports</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+    }
+
+    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+    {
+      <!-- Moderation Section -->
+      <li class="menu-header small text-uppercase">
+        <span class="menu-header-text">Moderation</span>
+      </li>
+
+      <li class='menu-item@(currentPage.StartsWith("/Moderation/") ? " active open" : "")'>
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+          <i class="menu-icon tf-icons bx bx-check-shield"></i>
+          <div data-i18n="Moderation">Moderation</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item">
+            <a asp-controller="Moderation" asp-action="PendingItems" class="menu-link">
+              <div data-i18n="Pending Items">⏳ Pending Items</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a asp-controller="Moderation" asp-action="FlaggedItems" class="menu-link">
+              <div data-i18n="Flagged Items">🚩 Flagged Items</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+    }
+  </ul>
+
+</aside>
+<!-- / Menu -->

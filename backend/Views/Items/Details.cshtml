@@ -1,0 +1,240 @@
+@model AspnetCoreMvcFull.Models.Item
+@{
+    ViewData["Title"] = $"{Model.Name} - {Model.Type} Item";
+    ViewData["container"] = "container-fluid";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Page Header -->
+        <div class="card bg-@(Model.Type == ItemType.Lost ? "primary" : "success") text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title text-white mb-1">
+                            @(Model.Type == ItemType.Lost ? "🔍" : "✅") @Model.Name
+                        </h4>
+                        <p class="mb-0 opacity-75">
+                            @(Model.Type == ItemType.Lost ? "Lost" : "Found") Item Details
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="@(Model.Type == ItemType.Lost ? "Lost" : "Found")" class="btn btn-light">
+                            <i class="bx bx-arrow-back me-1"></i>Back to @(Model.Type) Items
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bx bx-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bx bx-error-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Item Details -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <!-- Image Section -->
+                    <div class="col-md-6">
+                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                        {
+                            <img src="@Model.ImagePath" class="img-fluid rounded mb-3" alt="@Model.Name" style="max-height: 400px; width: 100%; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 300px;">
+                                <i class="bx bx-image text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                        }
+                    </div>
+                    
+                    <!-- Details Section -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h5 class="mb-0">@Model.Name</h5>
+                            <div class="mt-2">
+                                <span class="badge bg-label-@(Model.Type == ItemType.Lost ? "danger" : "success") me-2">@Model.Type</span>
+                                <span class="badge bg-label-primary me-2">@Model.Category</span>
+                                <span class="badge bg-label-@(Model.Status == ItemStatus.Active ? "warning" : "secondary")">@Model.Status</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6 class="fw-semibold">Description:</h6>
+                            <p class="text-muted">@Model.Description</p>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <h6 class="fw-semibold mb-1">Location:</h6>
+                                <p class="text-muted mb-0"><i class="bx bx-map me-1"></i>@Model.Location</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <h6 class="fw-semibold mb-1">Date @(Model.Type == ItemType.Lost ? "Lost" : "Found"):</h6>
+                                <p class="text-muted mb-0"><i class="bx bx-calendar me-1"></i>@Model.DateLostOrFound?.ToString("MMM dd, yyyy")</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6 class="fw-semibold mb-1">Reported:</h6>
+                            <p class="text-muted mb-0"><i class="bx bx-time me-1"></i>@Model.DateReported.ToString("MMM dd, yyyy 'at' HH:mm")</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6 class="fw-semibold mb-1">Posted by:</h6>
+                            <p class="text-muted mb-0"><i class="bx bx-user me-1"></i>@Model.User.UserName</p>
+                        </div>
+                        
+                        @if (!ViewBag.IsOwner && Model.Status == ItemStatus.Active)
+                        {
+                            <div class="mb-3">
+                                <h6 class="fw-semibold mb-1">Contact Information:</h6>
+                                <p class="text-muted mb-0"><i class="bx bx-envelope me-1"></i>@Model.ContactInfo</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Panel -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-cog me-2"></i>Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.IsOwner)
+                {
+                    <!-- Owner Actions -->
+                    <div class="alert alert-info">
+                        <i class="bx bx-info-circle me-2"></i>
+                        This is your item post.
+                    </div>
+                    
+                    @if (Model.Status == ItemStatus.Active)
+                    {
+                        <form asp-action="MarkAsReturned" method="post" class="mb-2">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-success w-100" 
+                                    onclick="return confirm('Mark this item as resolved?')">
+                                <i class="bx bx-check me-1"></i>Mark as Resolved
+                            </button>
+                        </form>
+                    }
+                    
+                    <a asp-action="MyItems" class="btn btn-outline-primary w-100">
+                        <i class="bx bx-list-ul me-1"></i>View My Items
+                    </a>
+                }
+                else if (Model.Status == ItemStatus.Active)
+                {
+                    @if (!ViewBag.HasClaimed)
+                    {
+                        <!-- Claim Form -->
+                        <form asp-action="SubmitClaim" method="post">
+                            <input type="hidden" name="itemId" value="@Model.Id" />
+                            
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Why do you think this is your item?</label>
+                                <textarea name="message" class="form-control" rows="3" 
+                                        placeholder="Please provide details about why you believe this item belongs to you..."
+                                        required></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-@(Model.Type == ItemType.Lost ? "primary" : "success") w-100">
+                                <i class="bx bx-hand me-1"></i>Claim This Item
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bx bx-clock me-2"></i>
+                            You have already submitted a claim for this item. Please wait for the owner's response.
+                        </div>
+                        
+                        <a asp-action="MyRequests" class="btn btn-outline-primary w-100">
+                            <i class="bx bx-list-ul me-1"></i>View My Requests
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-secondary">
+                        <i class="bx bx-info-circle me-2"></i>
+                        This item is no longer available for claiming.
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Claim Requests (for owners) -->
+        @if (ViewBag.IsOwner && Model.ClaimRequests.Any())
+        {
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bx bx-user-check me-2"></i>Claim Requests (@Model.ClaimRequests.Count)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var claim in Model.ClaimRequests.OrderByDescending(c => c.RequestDate))
+                    {
+                        <div class="border rounded p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">@claim.Claimant.UserName</h6>
+                                <small class="text-muted">@claim.RequestDate.ToString("MMM dd, HH:mm")</small>
+                            </div>
+                            <p class="text-muted mb-3">@claim.Message</p>
+                            
+                            @if (!claim.IsApproved && Model.Status == ItemStatus.Active)
+                            {
+                                <div class="d-flex gap-2">
+                                    <form asp-action="ApproveClaim" method="post" class="d-inline">
+                                        <input type="hidden" name="claimId" value="@claim.Id" />
+                                        <button type="submit" class="btn btn-sm btn-success" 
+                                                onclick="return confirm('Approve this claim request?')">
+                                            <i class="bx bx-check me-1"></i>Approve
+                                        </button>
+                                    </form>
+                                    <form asp-action="RejectClaim" method="post" class="d-inline">
+                                        <input type="hidden" name="claimId" value="@claim.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                onclick="return confirm('Reject this claim request?')">
+                                            <i class="bx bx-x me-1"></i>Reject
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                            else if (claim.IsApproved)
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div> 
