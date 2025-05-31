@@ -15,11 +15,11 @@ namespace AspnetCoreMvcFull.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IHubContext<ItemHub> _hubContext;
+        private readonly IHubContext<ChatHub> _hubContext;
 
         public ChatController(ApplicationDbContext context, 
             UserManager<ApplicationUser> userManager,
-            IHubContext<ItemHub> hubContext)
+            IHubContext<ChatHub> hubContext)
         {
             _context = context;
             _userManager = userManager;
@@ -72,14 +72,17 @@ namespace AspnetCoreMvcFull.Controllers
             {
                 _context.Messages.Add(message);
                 await _context.SaveChangesAsync();
+                
+                Console.WriteLine($"Sending message to {model.ReceiverId}: {message.Content}");
+                
+                // Send to the specific user
+                await _hubContext.Clients.User(model.ReceiverId).SendAsync("ReceiveMessage", message);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
                 return StatusCode(500, "Internal server error");
             }
-
-            await _hubContext.Clients.User(model.ReceiverId).SendAsync("ReceiveMessage", message);
 
             return Ok();
         }

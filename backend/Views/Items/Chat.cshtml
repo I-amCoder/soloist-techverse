@@ -17,7 +17,7 @@
                 class="message mb-2 @(message.SenderId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "sent" : "received")">
                 <div class="p-2 rounded"
                     style="background-color: @(message.SenderId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "#d1e7dd" : "#e2e3e5");">
-                    <p class="mb-1">@message.Content</p>
+                    <p class="mb-1">@message.Content</p> 
                     <small class="text-muted">@message.SentAt.ToString("MMM dd, HH:mm")</small>
                 </div>
             </div>
@@ -49,28 +49,39 @@
 </style>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
             .build();
 
         connection.on("ReceiveMessage", function (message) {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message received';
-            messageElement.innerHTML = `<div class="p-2 rounded" style="background-color: #e2e3e5;">
-                                                    <p class="mb-1">${message.content}</p>
-                                                    <small class="text-muted">${new Date(message.sentAt).toLocaleString()}</small>
-                                                </div>`;
-            document.querySelector('.chat-box').appendChild(messageElement);
+            console.log("Received message:", message);
+
+            const chatBox = document.querySelector(".chat-box");
+            const msgDiv = document.createElement("div");
+            msgDiv.className = 'message received';
+            msgDiv.innerHTML = `<div class="p-2 rounded" style="background-color: #e2e3e5;">
+                                            <p class="mb-1">${message.content}</p>
+                                            <small class="text-muted">${new Date(message.sentAt).toLocaleTimeString()}</small>
+                                        </div>`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
         });
 
-        connection.start().catch(err => console.error(err.toString()));
+        connection.start()
+            .then(() => console.log("SignalR Connected"))
+            .catch(err => console.error(err));
 
         document.getElementById("sendButton").addEventListener("click", function () {
-            const content = document.getElementById("messageContent").value;
+            const content = document.getElementById("messageContent").value.trim();
             const receiverId = document.getElementById("receiverId").value;
             const itemId = document.getElementById("itemId").value;
+
+            if (!content) {
+                alert("Message content cannot be empty.");
+                return;
+            }
 
             fetch('/Chat/SendMessage', {
                 method: 'POST',
@@ -81,16 +92,20 @@
                 body: JSON.stringify({ itemId, receiverId, content })
             }).then(response => {
                 if (response.ok) {
+                    console.log("Message sent successfully");
                     const messageElement = document.createElement('div');
                     messageElement.className = 'message sent';
                     messageElement.innerHTML = `<div class="p-2 rounded" style="background-color: #d1e7dd;">
                                                             <p class="mb-1">${content}</p>
-                                                            <small class="text-muted">${new Date().toLocaleString()}</small>
+                                                            <small class="text-muted">${new Date().toLocaleTimeString()}</small>
                                                         </div>`;
                     document.querySelector('.chat-box').appendChild(messageElement);
                     document.getElementById("messageContent").value = '';
+                    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+                } else {
+                    console.error("Failed to send message");
                 }
-            }).catch(err => console.error(err.toString()));
+            }).catch(err => console.error("Error:", err.toString()));
         });
     </script>
 }
