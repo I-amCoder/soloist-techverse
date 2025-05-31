@@ -208,9 +208,12 @@
                             </div>
                             <p class="text-muted mb-3">@claim.Message</p>
                             
-                            @if (claim.Status == ClaimStatus.Pending && Model.Status == ItemStatus.Active)
-                            {
-                                <div class="d-flex gap-2">
+                            <div class="d-flex gap-2">
+                                <a asp-action="Chat" asp-route-itemId="@Model.Id" asp-route-receiverId="@claim.ClaimantId" class="btn btn-sm btn-outline-primary">
+                                    <i class="bx bx-chat me-1"></i>Chat
+                                </a>
+                                @if (claim.Status == ClaimStatus.Pending && Model.Status == ItemStatus.Active)
+                                {
                                     <form asp-action="ApproveClaim" method="post" class="d-inline">
                                         <input type="hidden" name="claimId" value="@claim.Id" />
                                         <button type="submit" class="btn btn-sm btn-success" 
@@ -225,12 +228,12 @@
                                             <i class="bx bx-x me-1"></i>Reject
                                         </button>
                                     </form>
-                                </div>
-                            }
-                            else if (claim.Status == ClaimStatus.Approved)
-                            {
-                                <span class="badge bg-success">Approved</span>
-                            }
+                                }
+                                else if (claim.Status == ClaimStatus.Approved)
+                                {
+                                    <span class="badge bg-success">Approved</span>
+                                }
+                            </div>
                         </div>
                     }
                 </div>

@@ -2,6 +2,7 @@ using AspnetCoreMvcFull.Models.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using AspnetCoreMvcFull.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AspnetCoreMvcFull.Data
 {
@@ -14,6 +15,7 @@ namespace AspnetCoreMvcFull.Data
 
          public DbSet<Item> Items { get; set; }
          public DbSet<ClaimRequest> ClaimRequests { get; set; }
+         public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -62,6 +64,19 @@ namespace AspnetCoreMvcFull.Data
                 .HasOne(c => c.Claimant)
                 .WithMany()
                 .HasForeignKey(c => c.ClaimantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Message relationships
+            builder.Entity<Message>()
+                .HasOne(m => m.Sender)
+                .WithMany()
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Message>()
+                .HasOne(m => m.Receiver)
+                .WithMany()
+                .HasForeignKey(m => m.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

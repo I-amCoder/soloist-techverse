@@ -1,0 +1,38 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.Message>
+
+<div class="chat-container">
+    <div class="messages">
+        @foreach (var message in Model)
+        {
+            <div
+                class="message @(message.SenderId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "sent" : "received")">
+                <p>@message.Content</p>
+                <small>@message.SentAt.ToString("MMM dd, HH:mm")</small>
+            </div>
+        }
+    </div>
+    <form asp-action="SendMessage" method="post">
+        <input type="hidden" name="receiverId" value="@ViewBag.ReceiverId" />
+        <textarea name="content" required></textarea>
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.on("ReceiveMessage", function (message) {
+            // Append the new message to the chat
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message received';
+            messageElement.innerHTML = `<p>${message.content}</p><small>${new Date(message.sentAt).toLocaleString()}</small>`;
+            document.querySelector('.messages').appendChild(messageElement);
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+    </script>
+}

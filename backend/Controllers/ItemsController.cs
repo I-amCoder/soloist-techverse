@@ -543,5 +543,68 @@ namespace AspnetCoreMvcFull.Controllers
             
             return RedirectToAction(nameof(MyClaims));
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendMessage(int itemId, string receiverId, string content)
+        {
+            var sender = await _userManager.GetUserAsync(User);
+            if (sender == null)
+            {
+                return Unauthorized();
+            }
+
+            var message = new Message
+            {
+                SenderId = sender.Id,
+                ReceiverId = receiverId,
+                Content = content
+            };
+
+            _context.Messages.Add(message);
+            await _context.SaveChangesAsync();
+
+            // Notify the receiver via SignalR or other means
+            await _hubContext.Clients.User(receiverId).SendAsync("ReceiveMessage", message);
+
+            return RedirectToAction("Details", new { id = itemId });
+        }
+
+        public async Task<IActionResult> GetMessages(string userId)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return Unauthorized();
+            }
+
+            var messages = await _context.Messages
+                .Where(m => (m.SenderId == currentUser.Id && m.ReceiverId == userId) ||
+                            (m.SenderId == userId && m.ReceiverId == currentUser.Id))
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+
+            return Json(messages);
+        }
+
+        public async Task<IActionResult> Chat(int itemId, string receiverId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            ViewBag.ReceiverId = receiverId;
+            ViewBag.ItemId = itemId;
+
+            var messages = await _context.Messages
+                .Where(m => (m.SenderId == user.Id && m.ReceiverId == receiverId) ||
+                            (m.SenderId == receiverId && m.ReceiverId == user.Id))
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+
+            return View("Chat", messages);
+        }
     }
 } 
