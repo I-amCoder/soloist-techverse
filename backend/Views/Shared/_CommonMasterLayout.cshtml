@@ -59,6 +59,260 @@
   <!-- Place this tag in your head or just before your close body tag. -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
 
+  <!-- Global Chat Notification System -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+  <script>
+    // Global chat notification system
+    const chatNotificationConnection = new signalR.HubConnectionBuilder()
+      .withUrl("/chatHub")
+      .build();
+
+    let isOnChatPage = false;
+
+    // Check if current page is chat page
+    function updateChatPageStatus() {
+      isOnChatPage = window.location.pathname.includes('/Chat/Chat') || window.location.pathname.includes('/Items/Chat');
+    }
+
+    // Call on page load and when navigating
+    updateChatPageStatus();
+    window.addEventListener('popstate', updateChatPageStatus);
+
+    chatNotificationConnection.on("ReceiveMessageNotification", function (notification) {
+      // Only show notification if not on chat page
+      if (!isOnChatPage) {
+        showChatNotification(notification);
+      }
+    });
+
+    function showChatNotification(notification) {
+      // Create toast notification
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification chat-notification';
+      toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            max-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        `;
+
+      toast.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <strong>💬 New Message from ${notification.senderName}</strong>
+                    <p style="margin: 5px 0 10px 0; font-size: 14px; opacity: 0.9;">
+                        ${notification.content.length > 50 ? notification.content.substring(0, 50) + '...' : notification.content}
+                    </p>
+                    <button onclick="goToChat('${notification.itemId}', '${notification.senderId}')" 
+                            style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        Reply
+                    </button>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" 
+                        style="background: none; border: none; color: white; font-size: 18px; cursor: pointer; margin-left: 10px; padding: 0; line-height: 1;">
+                    ×
+                </button>
+            </div>
+        `;
+
+      document.body.appendChild(toast);
+
+      // Auto remove after 8 seconds
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.remove();
+        }
+      }, 8000);
+
+      // Play notification sound (optional)
+      playNotificationSound();
+    }
+
+    function goToChat(itemId, receiverId) {
+      window.location.href = `/Chat/Chat?itemId=${itemId}&receiverId=${receiverId}`;
+    }
+
+    function playNotificationSound() {
+      // Create audio context for notification sound
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+      } catch (e) {
+        console.log('Audio notification not supported');
+      }
+    }
+
+    chatNotificationConnection.start()
+      .then(() => console.log("Chat notification system connected"))
+      .catch(err => console.error("Chat notification connection failed:", err));
+
+    // Add CSS for animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @@keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .chat-notification:hover {
+            transform: scale(1.02);
+            transition: transform 0.2s;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Item notification system
+    const itemNotificationConnection = new signalR.HubConnectionBuilder()
+      .withUrl("/itemHub")
+      .build();
+
+    itemNotificationConnection.on("ReceiveNewItemNotification", function (item) {
+      // Only show if item details are provided (new format)
+      if (item.itemId && item.itemType) {
+        showItemNotification(item);
+      }
+    });
+
+    function showItemNotification(item) {
+      // Create toast notification for new items
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification item-notification';
+      toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: ${item.itemType === 'Lost' ? '#dc3545' : '#28a745'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9998;
+            max-width: 350px;
+            animation: slideInLeft 0.3s ease-out;
+        `;
+
+      const itemTypeIcon = item.itemType === 'Lost' ? '🔍' : '✅';
+
+      toast.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <strong>${itemTypeIcon} New ${item.itemType} Item Posted!</strong>
+                    <h6 style="margin: 5px 0; font-weight: 600;">${item.itemName}</h6>
+                    <p style="margin: 5px 0; font-size: 13px; opacity: 0.9;">
+                        ${item.itemDescription}
+                    </p>
+                    <small style="font-size: 11px; opacity: 0.8;">
+                        📍 ${item.location} • 📂 ${item.category} • 👤 ${item.userName}
+                    </small>
+                    <div style="margin-top: 8px;">
+                        <button onclick="goToItemDetails('${item.itemId}')" 
+                                style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+                            View Details
+                        </button>
+                        <button onclick="goToItemList('${item.itemType}')" 
+                                style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            View All ${item.itemType}
+                        </button>
+                    </div>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" 
+                        style="background: none; border: none; color: white; font-size: 18px; cursor: pointer; margin-left: 10px; padding: 0; line-height: 1;">
+                    ×
+                </button>
+            </div>
+        `;
+
+      document.body.appendChild(toast);
+
+      // Auto remove after 10 seconds
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.remove();
+        }
+      }, 10000);
+
+      // Play notification sound
+      playItemNotificationSound();
+    }
+
+    function goToItemDetails(itemId) {
+      window.location.href = `/Items/Details/${itemId}`;
+    }
+
+    function goToItemList(itemType) {
+      window.location.href = `/Items/${itemType}`;
+    }
+
+    function playItemNotificationSound() {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 500;
+        oscillator.type = 'triangle';
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+      } catch (e) {
+        console.log('Audio notification not supported');
+      }
+    }
+
+    itemNotificationConnection.start()
+      .then(() => console.log("Item notification system connected"))
+      .catch(err => console.error("Item notification connection failed:", err));
+
+    // Add CSS for left slide animation
+    const itemStyle = document.createElement('style');
+    itemStyle.textContent = `
+        @@keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .item-notification:hover {
+            transform: scale(1.02);
+            transition: transform 0.2s;
+        }
+    `;
+    document.head.appendChild(itemStyle);
+  </script>
+
 </body>
 
 </html>

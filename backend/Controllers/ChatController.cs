@@ -75,8 +75,17 @@ namespace AspnetCoreMvcFull.Controllers
                 
                 Console.WriteLine($"Sending message to {model.ReceiverId}: {message.Content}");
                 
-                // Send to the specific user
+                // Send direct message to chat page
                 await _hubContext.Clients.User(model.ReceiverId).SendAsync("ReceiveMessage", message);
+                
+                // Send notification for users not on chat page
+                await _hubContext.Clients.User(model.ReceiverId).SendAsync("ReceiveMessageNotification", new {
+                    senderId = sender.Id,
+                    senderName = sender.UserName,
+                    content = message.Content,
+                    sentAt = message.SentAt,
+                    itemId = model.ItemId
+                });
             }
             catch (Exception ex)
             {

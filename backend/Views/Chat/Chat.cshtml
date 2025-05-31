@@ -2,10 +2,10 @@
 
 <div class="chat-container">
     <div class="d-flex justify-content-between mb-3">
-        <a asp-action="Details" asp-route-id="@ViewBag.ItemId" class="btn btn-outline-secondary">
+        <a asp-controller="Items" asp-action="Details" asp-route-id="@ViewBag.ItemId" class="btn btn-outline-secondary">
             <i class="bx bx-arrow-back me-1"></i>Back to Item
         </a>
-        <a asp-action="MyRequests" class="btn btn-outline-secondary">
+        <a asp-controller="Items" asp-action="MyRequests" class="btn btn-outline-secondary">
             <i class="bx bx-list-ul me-1"></i>My Requests
         </a>
     </div>
@@ -51,18 +51,40 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
     <script>
+        // Set flag that we're on chat page
+        window.isOnChatPage = true;
+
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
             .build();
 
+        // Function to scroll chat to bottom
+        function scrollChatToBottom() {
+            const chatBox = document.querySelector('.chat-box');
+            if (chatBox) {
+                setTimeout(() => {
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 10); // Small delay to ensure DOM is updated
+            }
+        }
+
         connection.on("ReceiveMessage", function (message) {
             const messageElement = document.createElement('div');
-            messageElement.className = 'message received';
+            messageElement.className = 'message received mb-2';
             messageElement.innerHTML = `<div class="p-2 rounded" style="background-color: #e2e3e5;">
-                                                    <p class="mb-1">${message.content}</p>
-                                                    <small class="text-muted">${new Date(message.sentAt).toLocaleString()}</small>
-                                                </div>`;
-            document.querySelector('.chat-box').appendChild(messageElement);
+                                                                <p class="mb-1">${message.content}</p>
+                                                                <small class="text-muted">${new Date(message.sentAt).toLocaleString()}</small>
+                                                            </div>`;
+            const chatBox = document.querySelector('.chat-box');
+            chatBox.appendChild(messageElement);
+
+            // Scroll to bottom after message is added
+            scrollChatToBottom();
+        });
+
+        // Don't show notifications on chat page - messages are displayed directly
+        connection.on("ReceiveMessageNotification", function (notification) {
+            console.log("Notification received but ignored (on chat page)");
         });
 
         connection.start().catch(err => console.error(err.toString()));
@@ -79,28 +101,56 @@
 
             console.log("Sending message:", content);
 
-            fetch('/Chat/SendMessage', { 
+            fetch('/Chat/SendMessage', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                 },
-                body: JSON.stringify({ itemId, receiverId, content })
+                body: JSON.stringify({ itemId: parseInt(itemId), receiverId, content })
             }).then(response => {
                 if (response.ok) {
                     console.log("Message sent successfully");
                     const messageElement = document.createElement('div');
-                    messageElement.className = 'message sent';
+                    messageElement.className = 'message sent mb-2';
                     messageElement.innerHTML = `<div class="p-2 rounded" style="background-color: #d1e7dd;">
-                                                            <p class="mb-1">${content}</p>
-                                                            <small class="text-muted">${new Date().toLocaleString()}</small>
-                                                        </div>`;
-                    document.querySelector('.chat-box').appendChild(messageElement);
+                                                                        <p class="mb-1">${content}</p>
+                                                                        <small class="text-muted">${new Date().toLocaleString()}</small>
+                                                                    </div>`;
+                    const chatBox = document.querySelector('.chat-box');
+                    chatBox.appendChild(messageElement);
                     document.getElementById("messageContent").value = '';
+
+                    // Scroll to bottom after sending message
+                    scrollChatToBottom();
                 } else {
                     console.error("Failed to send message");
+                    response.text().then(text => console.error("Error details:", text));
                 }
             }).catch(err => console.error("Error:", err.toString()));
+        });
+
+        // Send message on Enter key
+        document.getElementById("messageContent").addEventListener("keypress", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById("sendButton").click();
+            }
+        });
+
+        // Clear the chat page flag when leaving
+        window.addEventListener('beforeunload', function () {
+            window.isOnChatPage = false;
+        });
+
+        // Scroll to bottom when page loads (for existing messages)
+        document.addEventListener('DOMContentLoaded', function () {
+            scrollChatToBottom();
+        });
+
+        // Also scroll to bottom when window loads (backup)
+        window.addEventListener('load', function () {
+            scrollChatToBottom();
         });
     </script>
 }
