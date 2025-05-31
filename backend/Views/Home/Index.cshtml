@@ -1,8 +1,116 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    Layout = "_BlankLayout";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@model IEnumerable<AspnetCoreMvcFull.Models.Item>
+
+@{
+    ViewData["Title"] = "Welcome to Campus Compass";
+}
+
+<style>
+    .hero-section {
+        position: relative;
+        color: #fff;
+        text-shadow: 1px 1px 2px #000;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        /* Dark overlay */
+        z-index: 1;
+    }
+
+    .hero-section .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .card {
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .card-body {
+        background-color: #f8f9fa;
+    }
+
+    .card-title {
+        color: #333;
+    }
+
+    .card-text {
+        color: #666;
+    }
+</style>
+
+<div class="hero-section text-center text-white"
+    style="background: url('/img/backgrounds/umt.jpg') no-repeat center center; background-size: cover; padding: 100px 0;">
+    <div class="container">
+        <h1 class="display-4 text-white">Welcome to Campus Compass</h1>
+        <p class="lead">Your gateway to finding lost and found items at UMT Lahore</p>
+        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary btn-lg mt-4">Explore Dashboard</a>
+    </div>
 </div>
+
+<div class="container my-5" id="items">
+    <h2 class="text-center mb-4">Browse Lost and Found Items</h2>
+    <div class="list-group" id="itemContainer">
+        @foreach (var item in Model)
+        {
+            <div class="list-group-item list-group-item-action mb-3 shadow-lg">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1 text-primary">@item.Name</h5>
+                    <small>@item.DateReported.ToShortDateString()</small>
+                </div>
+                <p class="mb-1 text-muted">@item.Description</p>
+                <small>Location: @item.Location</small>
+                <div class="mt-2">
+                    <a href="@Url.Action("Details", "Items", new { id = item.Id })"
+                        class="btn btn-outline-primary btn-sm">View Details</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/itemHub")
+            .build();
+
+        connection.on("ReceiveNewItemNotification", function (itemType) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `New ${itemType} item reported! <button onclick="scrollToNewItems()">View</button>`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 5000);
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+
+        function scrollToNewItems() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+}

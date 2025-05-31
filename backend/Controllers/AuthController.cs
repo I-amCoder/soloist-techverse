@@ -25,7 +25,7 @@ public class AuthController : Controller
     }
 
     [HttpGet]
-    public IActionResult LoginBasic()
+    public IActionResult Login()
     {
         if (User.Identity?.IsAuthenticated == true)
         {
@@ -36,7 +36,7 @@ public class AuthController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> LoginBasic(LoginViewModel model)
+    public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (ModelState.IsValid)
         {
@@ -58,7 +58,7 @@ public class AuthController : Controller
     }
 
     [HttpGet]
-    public IActionResult RegisterBasic()
+    public IActionResult Register()
     {
         if (User.Identity?.IsAuthenticated == true)
         {
@@ -69,7 +69,7 @@ public class AuthController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RegisterBasic(RegisterViewModel model)
+    public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (ModelState.IsValid)
         {
@@ -102,7 +102,7 @@ public class AuthController : Controller
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
-        return RedirectToAction("LoginBasic", "Auth");
+        return RedirectToAction("Login", "Auth");
     }
 
     [HttpGet]

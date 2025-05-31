@@ -2,6 +2,8 @@ using AspnetCoreMvcFull.Data;
 using AspnetCoreMvcFull.Models.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using AspnetCoreMvcFull.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +42,7 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 // Configure cookies
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Auth/LoginBasic";
+    options.LoginPath = "/Auth/Login";
     options.LogoutPath = "/Auth/Logout";
     options.AccessDeniedPath = "/Auth/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
@@ -53,6 +55,9 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add SignalR services
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -97,6 +102,8 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Dashboard}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapHub<ItemHub>("/itemHub");
 
 app.Run();

@@ -6,6 +6,8 @@ using AspnetCoreMvcFull.Data;
 using AspnetCoreMvcFull.Models;
 using AspnetCoreMvcFull.Models.Identity;
 using AspnetCoreMvcFull.Models.ViewModels;
+using Microsoft.AspNetCore.SignalR;
+using AspnetCoreMvcFull.Hubs;
 
 namespace AspnetCoreMvcFull.Controllers
 {
@@ -15,14 +17,17 @@ namespace AspnetCoreMvcFull.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _environment;
+        private readonly IHubContext<ItemHub> _hubContext;
 
         public ItemsController(ApplicationDbContext context, 
             UserManager<ApplicationUser> userManager,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IHubContext<ItemHub> hubContext)
         {
             _context = context;
             _userManager = userManager;
             _environment = environment;
+            _hubContext = hubContext;
         }
 
         // GET: Lost Items
@@ -125,6 +130,7 @@ namespace AspnetCoreMvcFull.Controllers
                 _context.Items.Add(item);
                 await _context.SaveChangesAsync();
                 
+                await _hubContext.Clients.All.SendAsync("ReceiveNewItemNotification", "Lost");
                 TempData["Success"] = "Lost item posted successfully!";
                 return RedirectToAction(nameof(Lost));
             }
@@ -165,6 +171,7 @@ namespace AspnetCoreMvcFull.Controllers
                 _context.Items.Add(item);
                 await _context.SaveChangesAsync();
                 
+                await _hubContext.Clients.All.SendAsync("ReceiveNewItemNotification", "Found");
                 TempData["Success"] = "Found item posted successfully!";
                 return RedirectToAction(nameof(Found));
             }

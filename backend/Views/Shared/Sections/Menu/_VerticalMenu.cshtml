@@ -9,11 +9,11 @@
 
   @* ! Hide app brand if navbar-full *@
   <div class='app-brand demo'>
-    <a asp-controller="Dashboard" asp-action="Index" class="app-brand-link">
+    <a asp-controller="Home" asp-action="Index" class="app-brand-link">
       <span class="app-brand-logo demo">
         @await Html.PartialAsync("../_Partials/_Macros")
       </span>
-      <span class="app-brand-text demo menu-text fw-bold ms-2">@TempData.Peek("appName")</span>
+      <span class="app-brand-text demo menu-text fw-bold ms-2">CampusCompass</span>
     </a>
   </div>
 

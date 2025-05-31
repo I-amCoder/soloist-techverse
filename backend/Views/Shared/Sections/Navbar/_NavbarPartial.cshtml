@@ -11,7 +11,7 @@
       <span class="app-brand-logo demo">
         @await Html.PartialAsync("../_Partials/_Macros")
       </span>
-      <span class="app-brand-text demo menu-text fw-bold">@TempData.Peek("appName")</span>
+      <span class="app-brand-text demo menu-text fw-bold">CampusCompass</span>
     </a>
   </div>
 }
@@ -39,13 +39,7 @@
   <!-- /Search -->
 
   <ul class="navbar-nav flex-row align-items-center ms-auto">
-    <!-- Place this tag where you want the button to render. -->
-    <li class="nav-item lh-1 me-4">
-      <a class="github-button"
-        href="https://github.com/themeselection/sneat-bootstrap-html-aspnet-core-mvc-admin-template-free"
-        data-icon="octicon-star" data-size="large" data-show-count="true"
-        aria-label="Star themeselection/sneat-html-admin-template-free on GitHub">Star</a>
-    </li>
+
 
     @if (SignInManager.IsSignedIn(User))
     {
@@ -79,18 +73,6 @@
             <div class="dropdown-divider my-1"></div>
           </li>
           <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-              <i class="bx bx-user bx-md me-2"></i>
-              <span>My Profile</span>
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-              <i class="bx bx-cog bx-md me-2"></i>
-              <span>Settings</span>
-            </a>
-          </li>
-          <li>
             <div class="dropdown-divider my-1"></div>
           </li>
           <li>
@@ -107,7 +89,7 @@
     else
     {
       <li class="nav-item">
-        <a class="nav-link" asp-controller="Auth" asp-action="LoginBasic">Login</a>
+        <a class="nav-link" asp-controller="Auth" asp-action="Login">Login</a>
       </li>
     }
   </ul>
