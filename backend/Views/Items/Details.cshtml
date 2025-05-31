@@ -22,6 +22,9 @@
                         <a asp-action="@(Model.Type == ItemType.Lost ? "Lost" : "Found")" class="btn btn-light">
                             <i class="bx bx-arrow-back me-1"></i>Back to @(Model.Type) Items
                         </a>
+                        <a asp-controller="Chat" asp-action="Chat" asp-route-itemId="@Model.Id" asp-route-receiverId="@Model.UserId" class="btn btn-outline-light">
+                            <i class="bx bx-chat me-1"></i>Chat
+                        </a>
                     </div>
                 </div>
             </div>
@@ -179,7 +182,7 @@
                         </a>
                         
                         <!-- Chat Button for Claimer -->
-                        <a asp-action="Chat" asp-route-itemId="@Model.Id" asp-route-receiverId="@Model.UserId" class="btn btn-outline-primary w-100 mt-2">
+                        <a asp-controller="Chat" asp-action="Chat" asp-route-itemId="@Model.Id" asp-route-receiverId="@Model.UserId" class="btn btn-outline-primary w-100 mt-2">
                             <i class="bx bx-chat me-1"></i>Chat with Owner
                         </a>
                     }
@@ -214,7 +217,7 @@
                             <p class="text-muted mb-3">@claim.Message</p>
                             
                             <div class="d-flex gap-2">
-                                <a asp-action="Chat" asp-route-itemId="@Model.Id" asp-route-receiverId="@claim.ClaimantId" class="btn btn-sm btn-outline-primary">
+                                <a asp-controller="Chat" asp-action="Chat" asp-route-itemId="@Model.Id" asp-route-receiverId="@claim.ClaimantId" class="btn btn-sm btn-outline-primary">
                                     <i class="bx bx-chat me-1"></i>Chat
                                 </a>
                                 @if (claim.Status == ClaimStatus.Pending && Model.Status == ItemStatus.Active)
