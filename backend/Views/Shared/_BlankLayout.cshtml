@@ -36,11 +36,11 @@ ViewContext.RouteData.Values["Controller"]?.ToString() != "Home")
               <i class="bx bx-list-ul me-1"></i>Browse Items
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" asp-controller="Items" asp-action="Index">
+              <li><a class="dropdown-item" asp-controller="Home" asp-action="Items">
                   <i class="bx bx-search me-2"></i>All Items</a></li>
-              <li><a class="dropdown-item" asp-controller="Items" asp-action="Index" asp-route-type="Lost">
+              <li><a class="dropdown-item" asp-controller="Home" asp-action="Items" asp-route-type="Lost">
                   <i class="bx bx-search me-2"></i>Lost Items</a></li>
-              <li><a class="dropdown-item" asp-controller="Items" asp-action="Index" asp-route-type="Found">
+              <li><a class="dropdown-item" asp-controller="Home" asp-action="Items" asp-route-type="Found">
                   <i class="bx bx-check-circle me-2"></i>Found Items</a></li>
             </ul>
           </li>
@@ -74,7 +74,7 @@ ViewContext.RouteData.Values["Controller"]?.ToString() != "Home")
                   <hr class="dropdown-divider">
                 </li>
                 <li>
-                  <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")"
+                  <form asp-controller="Auth" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home")"
                     method="post" class="d-inline">
                     <button type="submit" class="dropdown-item">
                       <i class="bx bx-log-out me-2"></i>Logout
