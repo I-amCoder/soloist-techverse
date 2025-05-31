@@ -67,3 +67,8 @@ jobs:
           app-name: 'campuscompass'
           slot-name: 'Production'
           package: ${{ github.workspace }}/myapp
+
+      - name: Run Database Migrations
+        run: |
+          cd backend
+          dotnet ef database update --connection-string "${{ secrets.DATABASE_CONNECTION_STRING }}"

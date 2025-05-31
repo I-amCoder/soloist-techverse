@@ -10,7 +10,7 @@ namespace AspnetCoreMvcFull.Models
 
     public enum ItemCategory
     {
-        Electronics, Documents, Clothing, Books, Accessories, Other
+        Electronics, Documents, Clothing, Books, Accessories, IDCard, WaterBottle, USBDrive, Notebook, Other
     }
 
     public enum ItemStatus
