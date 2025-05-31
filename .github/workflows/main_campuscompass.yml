@@ -20,6 +20,9 @@ jobs:
         with:
           dotnet-version: '8.x'
 
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
       - name: Build with dotnet
         run: |
           cd backend
