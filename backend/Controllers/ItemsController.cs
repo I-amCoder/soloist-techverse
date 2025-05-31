@@ -130,7 +130,17 @@ namespace AspnetCoreMvcFull.Controllers
                 _context.Items.Add(item);
                 await _context.SaveChangesAsync();
                 
-                await _hubContext.Clients.All.SendAsync("ReceiveNewItemNotification", "Lost");
+                // Send notification with correct data structure for _CommonMasterLayout
+                await _hubContext.Clients.All.SendAsync("ReceiveNewItemNotification", new {
+                    itemId = item.Id.ToString(),
+                    itemType = "Lost",
+                    itemName = item.Name,
+                    itemDescription = item.Description.Length > 60 ? item.Description.Substring(0, 60) + "..." : item.Description,
+                    location = item.Location,
+                    category = item.Category.ToString(),
+                    userName = $"{user.FirstName} {user.LastName[0]}."
+                });
+                
                 TempData["Success"] = "Lost item posted successfully!";
                 return RedirectToAction(nameof(Lost));
             }
@@ -171,7 +181,17 @@ namespace AspnetCoreMvcFull.Controllers
                 _context.Items.Add(item);
                 await _context.SaveChangesAsync();
                 
-                await _hubContext.Clients.All.SendAsync("ReceiveNewItemNotification", "Found");
+                // Send notification with correct data structure for _CommonMasterLayout
+                await _hubContext.Clients.All.SendAsync("ReceiveNewItemNotification", new {
+                    itemId = item.Id.ToString(),
+                    itemType = "Found",
+                    itemName = item.Name,
+                    itemDescription = item.Description.Length > 60 ? item.Description.Substring(0, 60) + "..." : item.Description,
+                    location = item.Location,
+                    category = item.Category.ToString(),
+                    userName = $"{user.FirstName} {user.LastName[0]}."
+                });
+                
                 TempData["Success"] = "Found item posted successfully!";
                 return RedirectToAction(nameof(Found));
             }
@@ -226,6 +246,7 @@ namespace AspnetCoreMvcFull.Controllers
             if (item != null)
             {
                 item.Status = ItemStatus.Resolved;
+                item.DateResolved = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Item marked as resolved successfully!";
             }
@@ -429,6 +450,7 @@ namespace AspnetCoreMvcFull.Controllers
             claim.Status = ClaimStatus.Completed;
             claim.CompletedDate = DateTime.UtcNow;
             claim.Item.Status = ItemStatus.Resolved;
+            claim.Item.DateResolved = DateTime.UtcNow;
             
             await _context.SaveChangesAsync();
             

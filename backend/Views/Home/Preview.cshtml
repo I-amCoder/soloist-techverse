@@ -1,6 +1,6 @@
 @model AspnetCoreMvcFull.Models.ViewModels.ItemPreviewViewModel
 @{
-    ViewData["Title"] = $"{Model.Name} - {Model.Type} Item";
+    ViewData["Title"] = $"{Model.Name} - Campus Compass";
     Layout = "_BlankLayout";
 }
 
@@ -8,54 +8,30 @@
     .item-preview-container {
         max-width: 800px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 30px 15px;
     }
 
-    .item-image-container {
-        background: #f8f9fa;
-        border-radius: 15px;
-        overflow: hidden;
-        margin-bottom: 30px;
-    }
-
-    .item-preview-image {
-        width: 100%;
-        height: 400px;
+    .item-image {
+        max-height: 400px;
         object-fit: cover;
-    }
-
-    .item-placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 400px;
-        color: #6c757d;
-        font-size: 5rem;
-    }
-
-    .item-details-card {
-        background: white;
         border-radius: 15px;
-        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .item-card {
+        border: none;
+        border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
+        overflow: hidden;
     }
 
     .badge-large {
-        padding: 8px 16px;
-        font-size: 1rem;
-        border-radius: 50px;
+        font-size: 0.9rem;
+        padding: 8px 15px;
     }
 
-    .action-buttons .btn {
-        margin: 5px;
-        border-radius: 50px;
-        padding: 12px 24px;
-        font-weight: 600;
-    }
-
-    .contact-info {
-        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    .contact-section {
+        background: #f8f9fa;
         border-radius: 15px;
         padding: 20px;
         margin-top: 20px;
@@ -63,121 +39,108 @@
 </style>
 
 <div class="container item-preview-container">
-    <!-- Back Button -->
-    <div class="mb-3">
-        <a href="javascript:history.back()" class="btn btn-outline-secondary">
-            <i class="bx bx-arrow-back me-2"></i>Back
-        </a>
-    </div>
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Items"
+                            asp-route-type="@Model.Type">@Model.Type Items</a></li>
+                    <li class="breadcrumb-item active">@Model.Name</li>
+                </ol>
+            </nav>
 
-    <!-- Item Image -->
-    <div class="item-image-container">
-        @if (!string.IsNullOrEmpty(Model.ImagePath))
-        {
-            <img src="@Model.ImagePath" alt="@Model.Name" class="item-preview-image">
-        }
-        else
-        {
-            <div class="item-placeholder">
-                <i class="bx bx-package"></i>
-            </div>
-        }
-    </div>
+            <!-- Item Card -->
+            <div class="card item-card">
+                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                {
+                    <img src="@Model.ImagePath" class="card-img-top item-image" alt="@Model.Name">
+                }
+                else
+                {
+                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light"
+                        style="height: 300px;">
+                        <i class="bx bx-image display-1 text-muted"></i>
+                    </div>
+                }
 
-    <!-- Item Details -->
-    <div class="item-details-card">
-        <div class="row">
-            <div class="col-md-8">
-                <h1 class="mb-3">@Model.Name</h1>
-                <div class="mb-3">
-                    <span class="badge bg-@Model.TypeBadgeClass badge-large me-2">
-                        <i class="bx @Model.TypeIcon me-1"></i>@Model.Type Item
-                    </span>
-                    <span class="badge bg-secondary badge-large">@Model.Category</span>
-                </div>
-            </div>
-            <div class="col-md-4 text-md-end">
-                <p class="text-muted mb-1">
-                    <i class="bx bx-calendar me-2"></i>@Model.DaysAgo days ago
-                </p>
-                <p class="text-muted">
-                    <i class="bx bx-map-pin me-2"></i>@Model.Location
-                </p>
-            </div>
-        </div>
+                <div class="card-body p-4">
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="badge bg-@Model.TypeBadgeClass badge-large">
+                                <i class="bx @Model.TypeIcon me-2"></i>@Model.Type Item
+                            </span>
+                            <span class="badge bg-secondary badge-large ms-2">@Model.Category</span>
+                        </div>
+                        <small class="text-muted">@Model.DaysAgo days ago</small>
+                    </div>
 
-        <hr>
+                    <!-- Title and Description -->
+                    <h2 class="card-title mb-3">@Model.Name</h2>
+                    <p class="card-text mb-4">@Model.Description</p>
 
-        <div class="row">
-            <div class="col-md-8">
-                <h5>Description</h5>
-                <p class="text-muted mb-4">@Model.Description</p>
+                    <!-- Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="bx bx-map-pin me-2 text-primary"></i>Location</h6>
+                            <p class="mb-3">@Model.Location</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bx bx-calendar me-2 text-primary"></i>Date Reported</h6>
+                            <p class="mb-3">@Model.DateReported.ToString("MMM dd, yyyy")</p>
+                        </div>
+                    </div>
 
-                <h6>Reported By</h6>
-                <p class="mb-0"><i class="bx bx-user me-2"></i>@Model.ReporterName</p>
-            </div>
-            <div class="col-md-4">
-                <div class="contact-info text-center">
-                    <h6 class="mb-3">Interested in this item?</h6>
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        @if (Model.IsOwnItem)
+                    <!-- Reporter Info -->
+                    <div class="contact-section">
+                        <h6><i class="bx bx-user me-2 text-primary"></i>Reported By</h6>
+                        <p class="mb-2">@Model.ReporterName</p>
+
+                        @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <p class="text-muted mb-2">This is your item</p>
-                            <a asp-controller="Items" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary">
-                                <i class="bx bx-edit me-2"></i>Manage Item
-                            </a>
+                            @if (Model.IsOwnItem)
+                            {
+                                <div class="alert alert-info">
+                                    <i class="bx bx-info-circle me-2"></i>This is your item.
+                                    <a asp-controller="Items" asp-action="Details" asp-route-id="@Model.Id"
+                                        class="alert-link">Manage this item</a>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-3">@Model.ContactMethod</p>
+                                <a asp-controller="Items" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary">
+                                    <i class="bx bx-envelope me-2"></i>Contact Owner
+                                </a>
+                            }
                         }
                         else
                         {
-                            <p class="text-muted mb-3">Contact the owner through our secure platform</p>
-                            <a asp-controller="Items" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-success">
-                                <i class="bx bx-message me-2"></i>Contact Owner
+                            <p class="text-muted mb-3">Please log in to contact the owner</p>
+                            <a asp-controller="Auth" asp-action="Login" class="btn btn-primary">
+                                <i class="bx bx-log-in me-2"></i>Login to Contact
+                            </a>
+                            <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-primary ms-2">
+                                <i class="bx bx-user-plus me-2"></i>Sign Up
                             </a>
                         }
-                    }
-                    else
-                    {
-                        <p class="text-muted mb-3">Sign in to contact the owner</p>
-                        <a asp-area="Identity" asp-page="/Account/Login"
-                            asp-route-returnUrl="@Url.Action("Preview", "Home", new { id = Model.Id })"
-                            class="btn btn-primary">
-                            <i class="bx bx-log-in me-2"></i>Sign In
-                        </a>
-                        <div class="mt-2">
-                            <small class="text-muted">
-                                Don't have an account?
-                                <a asp-area="Identity" asp-page="/Account/Register">Sign up</a>
-                            </small>
-                        </div>
-                    }
+                    </div>
                 </div>
             </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Items" asp-route-type="@Model.Type"
+                    class="btn btn-outline-secondary me-3">
+                    <i class="bx bx-arrow-back me-2"></i>Back to @Model.Type Items
+                </a>
+                <a asp-controller="Home" asp-action="Items" class="btn btn-outline-primary">
+                    <i class="bx bx-list-ul me-2"></i>Browse All Items
+                </a>
+            </div>
         </div>
-    </div>
-
-    <!-- Additional Actions -->
-    <div class="text-center action-buttons">
-        <a asp-controller="Items" asp-action="Index" class="btn btn-outline-primary">
-            <i class="bx bx-list-ul me-2"></i>Browse More Items
-        </a>
-
-        @if (Model.Type == ItemType.Lost)
-        {
-            <a asp-controller="Items" asp-action="PostFound" class="btn btn-success">
-                <i class="bx bx-check-circle me-2"></i>I Found This Item
-            </a>
-        }
-        else
-        {
-            <a asp-controller="Items" asp-action="PostLost" class="btn btn-danger">
-                <i class="bx bx-search me-2"></i>This Is My Lost Item
-            </a>
-        }
-
-        <button class="btn btn-outline-secondary" onclick="window.print()">
-            <i class="bx bx-printer me-2"></i>Print Details
-        </button>
     </div>
 </div>
 

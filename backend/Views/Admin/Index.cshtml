@@ -122,53 +122,153 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="bx bx-lightning me-2"></i>Quick Actions
+                    <i class="bx bx-lightning me-2"></i>Admin Quick Actions
                 </h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-lg-3 col-md-6 mb-3">
-                        <a asp-action="Items"
-                            class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center">
-                            <i class="bx bx-package bx-lg mb-2"></i>
-                            <span>Manage Items</span>
-                            <small class="text-muted">View and moderate posts</small>
+                        <a asp-action="PendingRequests"
+                            class="btn btn-outline-danger w-100 h-100 d-flex flex-column justify-content-center position-relative">
+                            <i class="bx bx-bell bx-lg mb-2"></i>
+                            <span class="fw-semibold">Pending Requests</span>
+                            <small class="text-muted">Review admin requests</small>
+                            @if (ViewBag.PendingRequestsCount > 0)
+                            {
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    @ViewBag.PendingRequestsCount
+                                </span>
+                            }
                         </a>
                     </div>
                     <div class="col-lg-3 col-md-6 mb-3">
-                        <a asp-action="Claims"
-                            class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center">
-                            <i class="bx bx-hand bx-lg mb-2"></i>
-                            <span>Manage Claims</span>
-                            <small class="text-muted">Review claim requests</small>
+                        <a asp-action="AllRequests"
+                            class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-list-ul bx-lg mb-2"></i>
+                            <span class="fw-semibold">All Requests</span>
+                            <small class="text-muted">View all admin requests</small>
                         </a>
                     </div>
                     <div class="col-lg-3 col-md-6 mb-3">
                         <a asp-action="Users"
-                            class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center">
-                            <i class="bx bx-users bx-lg mb-2"></i>
-                            <span>Manage Users</span>
+                            class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-group bx-lg mb-2"></i>
+                            <span class="fw-semibold">Manage Users</span>
                             <small class="text-muted">User roles and permissions</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-action="Claims"
+                            class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-check-shield bx-lg mb-2"></i>
+                            <span class="fw-semibold">Manage Claims</span>
+                            <small class="text-muted">Review claim requests</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Management -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-cog me-2"></i>System Management
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-controller="Items" asp-action="Index"
+                            class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-package bx-lg mb-2"></i>
+                            <span class="fw-semibold">Manage Items</span>
+                            <small class="text-muted">View and moderate posts</small>
                         </a>
                     </div>
                     <div class="col-lg-3 col-md-6 mb-3">
                         <a asp-action="Statistics"
                             class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center">
                             <i class="bx bx-bar-chart bx-lg mb-2"></i>
-                            <span>View Reports</span>
+                            <span class="fw-semibold">View Reports</span>
                             <small class="text-muted">Analytics and insights</small>
                         </a>
                     </div>
                     <div class="col-lg-3 col-md-6 mb-3">
                         <a asp-action="EscalatedItems"
-                            class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center">
+                            class="btn btn-outline-danger w-100 h-100 d-flex flex-column justify-content-center position-relative">
                             <i class="bx bx-shield bx-lg mb-2"></i>
-                            <span>Escalated Items</span>
+                            <span class="fw-semibold">Escalated Items</span>
                             <small class="text-muted">Items needing review</small>
                             @if (ViewBag.EscalatedCount > 0)
                             {
-                                <span class="badge bg-danger">@ViewBag.EscalatedCount</span>
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    @ViewBag.EscalatedCount
+                                </span>
                             }
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-controller="Home" asp-action="Index"
+                            class="btn btn-outline-secondary w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-home bx-lg mb-2"></i>
+                            <span class="fw-semibold">Public Portal</span>
+                            <small class="text-muted">View public interface</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Functions (Quick Access) -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bx bx-user me-2"></i>Quick User Functions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-controller="Items" asp-action="Lost"
+                            class="btn btn-outline-danger w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-search bx-lg mb-2"></i>
+                            <span class="fw-semibold">Browse Lost Items</span>
+                            <small class="text-muted">See what items people are looking for</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-controller="Items" asp-action="Found"
+                            class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-check-circle bx-lg mb-2"></i>
+                            <span class="fw-semibold">Browse Found Items</span>
+                            <small class="text-muted">Check if someone found your lost item</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-controller="Items" asp-action="PostLost"
+                            class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-search bx-lg mb-2"></i>
+                            <span class="fw-semibold">Report Lost Item</span>
+                            <small class="text-muted">Lost something? Let others help you find it</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a asp-controller="Items" asp-action="PostFound"
+                            class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center">
+                            <i class="bx bx-package bx-lg mb-2"></i>
+                            <span class="fw-semibold">Report Found Item</span>
+                            <small class="text-muted">Found something? Help reunite it with its owner</small>
                         </a>
                     </div>
                 </div>
@@ -250,8 +350,8 @@
                             <div class="avatar avatar-sm me-3">
                                 <span
                                     class="avatar-initial rounded-circle bg-label-@(claim.Status == ClaimStatus.Pending ? "warning" : 
-                                                                                                                                                           claim.Status == ClaimStatus.Approved ? "success" : 
-                                                                                                                                                           claim.Status == ClaimStatus.Rejected ? "danger" : "info")">
+                                                                                                                                                                                                                                                                                                           claim.Status == ClaimStatus.Approved ? "success" : 
+                                                                                                                                                                                                                                                                                                           claim.Status == ClaimStatus.Rejected ? "danger" : "info")">
                                     @(claim.Status == ClaimStatus.Pending ? "⏳" :
                                                                 claim.Status == ClaimStatus.Approved ? "✅" :
                                                                 claim.Status == ClaimStatus.Rejected ? "❌" : "🤝")
@@ -263,8 +363,8 @@
                             Claimed by @claim.Claimant.FirstName @claim.Claimant.LastName
                             <span
                                 class="badge bg-label-@(claim.Status == ClaimStatus.Pending ? "warning" : 
-                                                                                                                                                claim.Status == ClaimStatus.Approved ? "success" : 
-                                                                                                                                                claim.Status == ClaimStatus.Rejected ? "danger" : "info") ms-2">
+                                                                                                                                                                                                                                                                                                                claim.Status == ClaimStatus.Approved ? "success" : 
+                                                                                                                                                                                                                                                                                                                claim.Status == ClaimStatus.Rejected ? "danger" : "info") ms-2">
                                 @claim.Status
                             </span>
                         </small>

@@ -44,22 +44,22 @@
           <!-- Admin Quick Actions -->
           <div class="row g-3">
             <div class="col-lg-3 col-md-6">
-              <a asp-controller="Admin" asp-action="Dashboard"
+              <a asp-controller="Admin" asp-action="PendingRequests"
                 class="card bg-danger text-white text-decoration-none h-100">
                 <div class="card-body text-center">
                   <i class="bx bx-task display-4 mb-3"></i>
                   <h6 class="text-white mb-2">Pending Requests</h6>
-                  <small class="opacity-75">Review admin requests</small>
+                  <small class="opacity-75">Resolve disputes</small>
                 </div>
               </a>
             </div>
 
             <div class="col-lg-3 col-md-6">
-              <a asp-controller="Admin" asp-action="Items" class="card bg-info text-white text-decoration-none h-100">
+              <a asp-controller="Admin" asp-action="AllRequests" class="card bg-info text-white text-decoration-none h-100">
                 <div class="card-body text-center">
                   <i class="bx bx-package display-4 mb-3"></i>
-                  <h6 class="text-white mb-2">Manage Items</h6>
-                  <small class="opacity-75">Monitor all posted items</small>
+                  <h6 class="text-white mb-2">All Requests</h6>
+                  <small class="opacity-75">All Resolve Requests</small>
                 </div>
               </a>
             </div>
@@ -75,12 +75,12 @@
             </div>
 
             <div class="col-lg-3 col-md-6">
-              <a asp-controller="Admin" asp-action="EscalatedItems"
+              <a asp-controller="Admin" asp-action="Claims"
                 class="card bg-warning text-white text-decoration-none h-100">
                 <div class="card-body text-center">
                   <i class="bx bx-error display-4 mb-3"></i>
-                  <h6 class="text-white mb-2">Escalated Items</h6>
-                  <small class="opacity-75">Resolve disputes</small>
+                  <h6 class="text-white mb-2">Manage Claims</h6>
+                  <small class="opacity-75">Resolve User Claims</small>
                 </div>
               </a>
             </div>
@@ -94,51 +94,118 @@
         }
 
         <!-- Regular User Quick Actions (shown for all users) -->
-        <div class="row g-3">
-          <!-- Report Lost Item -->
-          <div class="col-lg-3 col-md-6">
-            <a asp-controller="Items" asp-action="PostLost"
-              class="card bg-danger text-white text-decoration-none h-100">
-              <div class="card-body text-center">
-                <i class="bx bx-search-alt-2 display-4 mb-3"></i>
-                <h6 class="text-white mb-2">Report Lost Item</h6>
-                <small class="opacity-75">Lost something? Let others help you find it</small>
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="bx bx-lightning me-2"></i>Quick Actions
+                </h5>
               </div>
-            </a>
-          </div>
+              <div class="card-body">
+                <div class="row">
+                  <!-- Report Lost Item -->
+                  <div class="col-lg-3 col-md-6 mb-3">
+                    <a asp-controller="Items" asp-action="PostLost"
+                      class="btn btn-outline-danger w-100 h-100 d-flex flex-column justify-content-center">
+                      <i class="bx bx-search bx-lg mb-2"></i>
+                      <span class="fw-semibold">Report Lost Item</span>
+                      <small class="text-muted">Lost something? Let others help you find it</small>
+                    </a>
+                  </div>
 
-          <!-- Report Found Item -->
-          <div class="col-lg-3 col-md-6">
-            <a asp-controller="Items" asp-action="PostFound"
-              class="card bg-success text-white text-decoration-none h-100">
-              <div class="card-body text-center">
-                <i class="bx bx-package display-4 mb-3"></i>
-                <h6 class="text-white mb-2">Report Found Item</h6>
-                <small class="opacity-75">Found something? Help reunite it with its owner</small>
-              </div>
-            </a>
-          </div>
+                  <!-- Report Found Item -->
+                  <div class="col-lg-3 col-md-6 mb-3">
+                    <a asp-controller="Items" asp-action="PostFound"
+                      class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center">
+                      <i class="bx bx-package bx-lg mb-2"></i>
+                      <span class="fw-semibold">Report Found Item</span>
+                      <small class="text-muted">Found something? Help reunite it with its owner</small>
+                    </a>
+                  </div>
 
-          <!-- Browse Lost Items -->
-          <div class="col-lg-3 col-md-6">
-            <a asp-controller="Items" asp-action="Lost" class="card bg-info text-white text-decoration-none h-100">
-              <div class="card-body text-center">
-                <i class="bx bx-list-ul display-4 mb-3"></i>
-                <h6 class="text-white mb-2">Browse Lost Items</h6>
-                <small class="opacity-75">See what items people are looking for</small>
-              </div>
-            </a>
-          </div>
+                  <!-- My Items -->
+                  <div class="col-lg-3 col-md-6 mb-3">
+                    <a asp-controller="Items" asp-action="MyItems"
+                      class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center position-relative">
+                      <i class="bx bx-box bx-lg mb-2"></i>
+                      <span class="fw-semibold">My Items</span>
+                      <small class="text-muted">Manage your posted items</small>
+                      @if ((int)ViewBag.MyLostCount + (int)ViewBag.MyFoundCount > 0)
+                      {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                          @((int)ViewBag.MyLostCount + (int)ViewBag.MyFoundCount)
+                        </span>
+                      }
+                    </a>
+                  </div>
 
-          <!-- Browse Found Items -->
-          <div class="col-lg-3 col-md-6">
-            <a asp-controller="Items" asp-action="Found" class="card bg-warning text-white text-decoration-none h-100">
-              <div class="card-body text-center">
-                <i class="bx bx-check-circle display-4 mb-3"></i>
-                <h6 class="text-white mb-2">Browse Found Items</h6>
-                <small class="opacity-75">Check if someone found your lost item</small>
+                  <!-- My Requests -->
+                  <div class="col-lg-3 col-md-6 mb-3">
+                    <a asp-controller="Items" asp-action="MyRequests"
+                      class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center position-relative">
+                      <i class="bx bx-task bx-lg mb-2"></i>
+                      <span class="fw-semibold">My Requests</span>
+                      <small class="text-muted">Track your claim requests</small>
+                      @if (ViewBag.MyActiveRequests > 0)
+                      {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-info">
+                          @ViewBag.MyActiveRequests
+                        </span>
+                      }
+                    </a>
+                  </div>
+                </div>
               </div>
-            </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Browse Items -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="bx bx-search me-2"></i>Browse Items
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <!-- Browse Lost Items -->
+                  <div class="col-lg-6 col-md-6 mb-3">
+                    <a asp-controller="Items" asp-action="Lost" 
+                      class="btn btn-outline-danger w-100 h-100 d-flex flex-column justify-content-center position-relative">
+                      <i class="bx bx-search-alt-2 bx-lg mb-2"></i>
+                      <span class="fw-semibold">Browse Lost Items</span>
+                      <small class="text-muted">See what items people are looking for</small>
+                      @if (ViewBag.TotalLostItems > 0)
+                      {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                          @ViewBag.TotalLostItems
+                        </span>
+                      }
+                    </a>
+                  </div>
+
+                  <!-- Browse Found Items -->
+                  <div class="col-lg-6 col-md-6 mb-3">
+                    <a asp-controller="Items" asp-action="Found" 
+                      class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center position-relative">
+                      <i class="bx bx-check-circle bx-lg mb-2"></i>
+                      <span class="fw-semibold">Browse Found Items</span>
+                      <small class="text-muted">Check if someone found your lost item</small>
+                      @if (ViewBag.TotalFoundItems > 0)
+                      {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+                          @ViewBag.TotalFoundItems
+                        </span>
+                      }
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -165,9 +165,9 @@
       .then(() => console.log("Chat notification system connected"))
       .catch(err => console.error("Chat notification connection failed:", err));
 
-    // Add CSS for animation
-    const style = document.createElement('style');
-    style.textContent = `
+    // Add CSS for animations (near the end of the chat notification section)
+    const chatStyle = document.createElement('style');
+    chatStyle.textContent = `
         @@keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -178,12 +178,12 @@
                 opacity: 1;
             }
         }
-        .chat-notification:hover {
+        .toast-notification:hover {
             transform: scale(1.02);
             transition: transform 0.2s;
         }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(chatStyle);
 
     // Item notification system
     const itemNotificationConnection = new signalR.HubConnectionBuilder()
@@ -260,7 +260,7 @@
     }
 
     function goToItemDetails(itemId) {
-      window.location.href = `/Items/Details/${itemId}`;
+      window.location.href = `/Home/Preview/${itemId}`;
     }
 
     function goToItemList(itemType) {
@@ -292,9 +292,9 @@
       .then(() => console.log("Item notification system connected"))
       .catch(err => console.error("Item notification connection failed:", err));
 
-    // Add CSS for left slide animation
-    const itemStyle = document.createElement('style');
-    itemStyle.textContent = `
+    // Add CSS for left slide animation (at the very end)
+    const itemNotificationStyle = document.createElement('style');
+    itemNotificationStyle.textContent = `
         @@keyframes slideInLeft {
             from {
                 transform: translateX(-100%);
@@ -310,7 +310,7 @@
             transition: transform 0.2s;
         }
     `;
-    document.head.appendChild(itemStyle);
+    document.head.appendChild(itemNotificationStyle);
   </script>
 
 </body>
