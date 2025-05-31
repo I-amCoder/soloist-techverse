@@ -16,6 +16,7 @@ namespace AspnetCoreMvcFull.Data
          public DbSet<Item> Items { get; set; }
          public DbSet<ClaimRequest> ClaimRequests { get; set; }
          public DbSet<Message> Messages { get; set; }
+         public DbSet<AdminRequest> AdminRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

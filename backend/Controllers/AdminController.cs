@@ -547,5 +547,188 @@ namespace AspnetCoreMvcFull.Controllers
             
             return RedirectToAction(nameof(EscalatedItems));
         }
+
+        // GET: Pending Admin Requests
+        public async Task<IActionResult> PendingRequests()
+        {
+            var pendingRequests = await _context.AdminRequests
+                .Include(r => r.Item)
+                .Include(r => r.Requester)
+                .Include(r => r.Claimant)
+                .Where(r => r.Status == AdminRequestStatus.Pending)
+                .OrderByDescending(r => r.RequestedAt)
+                .ToListAsync();
+
+            return View(pendingRequests);
+        }
+
+        // GET: All Admin Requests
+        public async Task<IActionResult> AllRequests()
+        {
+            var allRequests = await _context.AdminRequests
+                .Include(r => r.Item)
+                .Include(r => r.Requester)
+                .Include(r => r.Claimant)
+                .Include(r => r.ResolvedBy)
+                .OrderByDescending(r => r.RequestedAt)
+                .ToListAsync();
+
+            return View(allRequests);
+        }
+
+        // GET: Request Details
+        public async Task<IActionResult> RequestDetails(int id)
+        {
+            var request = await _context.AdminRequests
+                .Include(r => r.Item)
+                .ThenInclude(i => i.ClaimRequests)
+                .ThenInclude(c => c.Claimant)
+                .Include(r => r.Requester)
+                .Include(r => r.Claimant)
+                .Include(r => r.ResolvedBy)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (request == null)
+            {
+                return NotFound();
+            }
+
+            return View(request);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveRequest(int id, string? claimantEmail, string adminResponse)
+        {
+            var request = await _context.AdminRequests
+                .Include(r => r.Item)
+                .ThenInclude(i => i.ClaimRequests)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (request == null)
+            {
+                return NotFound();
+            }
+
+            var admin = await _userManager.GetUserAsync(User);
+            
+            // Validate claimant if provided
+            string? validClaimantId = null;
+            if (!string.IsNullOrWhiteSpace(claimantEmail))
+            {
+                var claimantUser = await _userManager.FindByEmailAsync(claimantEmail.Trim());
+                if (claimantUser == null)
+                {
+                    claimantUser = await _userManager.FindByNameAsync(claimantEmail.Trim());
+                }
+                
+                if (claimantUser != null)
+                {
+                    validClaimantId = claimantUser.Id;
+                    
+                    // Create or approve claim for this user
+                    var existingClaim = request.Item.ClaimRequests
+                        .FirstOrDefault(c => c.ClaimantId == validClaimantId);
+                    
+                    if (existingClaim != null)
+                    {
+                        existingClaim.Status = ClaimStatus.Approved;
+                        existingClaim.ApprovedDate = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        // Create new claim request
+                        var newClaim = new ClaimRequest
+                        {
+                            ItemId = request.ItemId,
+                            ClaimantId = validClaimantId,
+                            Status = ClaimStatus.Approved,
+                            ApprovedDate = DateTime.UtcNow,
+                            RequestDate = DateTime.UtcNow,
+                            HandoverNotes = "Approved by admin"
+                        };
+                        _context.ClaimRequests.Add(newClaim);
+                    }
+                    
+                    // Reject all other pending claims for this item
+                    var otherClaims = request.Item.ClaimRequests
+                        .Where(c => c.ClaimantId != validClaimantId && c.Status == ClaimStatus.Pending)
+                        .ToList();
+                    
+                    foreach (var otherClaim in otherClaims)
+                    {
+                        otherClaim.Status = ClaimStatus.Rejected;
+                    }
+                    
+                    // Mark item as claimed
+                    request.Item.Status = ItemStatus.Claimed;
+                }
+                else
+                {
+                    TempData["Error"] = "Claimant user not found. Please check the email/username.";
+                    return RedirectToAction("RequestDetails", new { id });
+                }
+            }
+            
+            request.Status = AdminRequestStatus.Approved;
+            request.AdminResponse = adminResponse;
+            request.ResolvedById = admin!.Id;
+            request.ResolvedAt = DateTime.UtcNow;
+            request.ClaimantId = validClaimantId;
+
+            await _context.SaveChangesAsync();
+            
+            TempData["Success"] = "Request approved successfully! Other pending claims have been rejected.";
+            return RedirectToAction(nameof(PendingRequests));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectRequest(int id, string adminResponse)
+        {
+            var request = await _context.AdminRequests.FindAsync(id);
+            if (request == null)
+            {
+                return NotFound();
+            }
+
+            var admin = await _userManager.GetUserAsync(User);
+            
+            request.Status = AdminRequestStatus.Rejected;
+            request.AdminResponse = adminResponse;
+            request.ResolvedById = admin!.Id;
+            request.ResolvedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            
+            TempData["Success"] = "Request rejected!";
+            return RedirectToAction(nameof(PendingRequests));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResolveRequest(int id, string adminResponse)
+        {
+            var request = await _context.AdminRequests
+                .Include(r => r.Item)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (request == null)
+            {
+                return NotFound();
+            }
+
+            var admin = await _userManager.GetUserAsync(User);
+            
+            request.Status = AdminRequestStatus.Resolved;
+            request.AdminResponse = adminResponse;
+            request.ResolvedById = admin!.Id;
+            request.ResolvedAt = DateTime.UtcNow;
+            
+            // Mark item as resolved
+            request.Item.Status = ItemStatus.Resolved;
+
+            await _context.SaveChangesAsync();
+            
+            TempData["Success"] = "Request resolved successfully!";
+            return RedirectToAction(nameof(AllRequests));
+        }
     }
 } 

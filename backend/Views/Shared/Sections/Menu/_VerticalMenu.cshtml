@@ -4,7 +4,7 @@
 }
 
 <!-- Menu -->
-@* ! Do this simple *@
+@* ! Do this simple *@ 
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
 
   @* ! Hide app brand if navbar-full *@
@@ -22,7 +22,8 @@
   @* ! Full version menu-items *@
   <ul class="menu-inner py-1">
     <!-- My Dashboard -->
-    <li class='menu-item@(currentPage.EndsWith("/") || currentPage.StartsWith("/Dashboard/Index") ? " active" : "")'>
+    <li
+      class='menu-item@(currentPage.EndsWith("/") || currentPage.StartsWith("/Dashboard/Index") || currentPage.StartsWith("/Dashboard") && !currentPage.Contains("/Manager") && !currentPage.Contains("/Admin") ? " active" : "")'>
       <a asp-controller="Dashboard" asp-action="Index" class="menu-link">
         <i class="menu-icon tf-icons bx bx-home-smile"></i>
         <div data-i18n="My Dashboard">My Dashboard</div>
@@ -42,7 +43,7 @@
 
     @if (User.IsInRole("Admin"))
     {
-      <!-- Admin Dashboard -->
+      <!-- Admin Dashboard (Separate) -->
       <li class='menu-item@(currentPage.StartsWith("/Dashboard/Admin") ? " active" : "")'>
         <a asp-controller="Dashboard" asp-action="Admin" class="menu-link">
           <i class="menu-icon tf-icons bx bx-shield"></i>
@@ -109,6 +110,16 @@
           <div data-i18n="Admin Panel">Admin Panel</div>
         </a>
         <ul class="menu-sub">
+          <li class='menu-item@(currentPage.Contains("/Admin/PendingRequests") ? " active" : "")'>
+            <a asp-controller="Admin" asp-action="PendingRequests" class="menu-link">
+              <div data-i18n="Pending Requests">🔔 Pending Requests</div>
+            </a>
+          </li>
+          <li class='menu-item@(currentPage.Contains("/Admin/AllRequests") ? " active" : "")'>
+            <a asp-controller="Admin" asp-action="AllRequests" class="menu-link">
+              <div data-i18n="All Requests">📋 All Requests</div>
+            </a>
+          </li>
           <li class="menu-item">
             <a asp-controller="Admin" asp-action="Users" class="menu-link">
               <div data-i18n="Manage Users">👥 Manage Users</div>
@@ -116,7 +127,7 @@
           </li>
           <li class="menu-item">
             <a asp-controller="Admin" asp-action="Items" class="menu-link">
-              <div data-i18n="Manage Items">📋 Manage Items</div>
+              <div data-i18n="Manage Items">📦 Manage Items</div>
             </a>
           </li>
           <li class="menu-item">

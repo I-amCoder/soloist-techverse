@@ -26,6 +26,7 @@ public class DashboardController : Controller
   public async Task<IActionResult> Index()
   {
     var user = await _userManager.GetUserAsync(User);
+    var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
     
     // Add null check
     if (user == null)
@@ -33,47 +34,65 @@ public class DashboardController : Controller
         return RedirectToAction("Login", "Account");
     }
 
-    // Get user's items
-    var myLostItems = await _context.Items
-      .Where(i => i.UserId == user.Id && i.Type == ItemType.Lost && i.Status == ItemStatus.Active)
-      .CountAsync();
-      
-    var myFoundItems = await _context.Items
-      .Where(i => i.UserId == user.Id && i.Type == ItemType.Found && i.Status == ItemStatus.Active)
-      .CountAsync();
-
-    var myPendingClaims = await _context.ClaimRequests
-        .Where(c => c.ClaimantId == user.Id && c.Status == ClaimStatus.Pending)
+    // Get statistics for all users
+    ViewBag.TotalLostItems = await _context.Items
+        .Where(i => i.Type == ItemType.Lost)
         .CountAsync();
 
-    var claimsOnMyItems = await _context.ClaimRequests
-        .Include(c => c.Item)
-        .Where(c => c.Item.UserId == user.Id && c.Status == ClaimStatus.Pending)
+    ViewBag.TotalFoundItems = await _context.Items
+        .Where(i => i.Type == ItemType.Found)
         .CountAsync();
 
-    // Get recent campus activity
-    var recentLostItems = await _context.Items
-      .Include(i => i.User)
-      .Where(i => i.Type == ItemType.Lost && i.Status == ItemStatus.Active)
-      .OrderByDescending(i => i.DateReported)
-      .Take(5)
-      .ToListAsync();
-      
-    var recentFoundItems = await _context.Items
-      .Include(i => i.User)
-      .Where(i => i.Type == ItemType.Found && i.Status == ItemStatus.Active)
-      .OrderByDescending(i => i.DateReported)
-      .Take(5)
-      .ToListAsync();
+    ViewBag.ReunitedItems = await _context.Items
+        .Where(i => i.Status == ItemStatus.Resolved)
+        .CountAsync();
 
-    ViewBag.MyLostCount = myLostItems;
-    ViewBag.MyFoundCount = myFoundItems;
-    ViewBag.MyPendingClaims = myPendingClaims;
-    ViewBag.ClaimsOnMyItems = claimsOnMyItems;
-    ViewBag.RecentLostItems = recentLostItems;
-    ViewBag.RecentFoundItems = recentFoundItems;
-    ViewBag.TotalLostItems = await _context.Items.Where(i => i.Type == ItemType.Lost && i.Status == ItemStatus.Active).CountAsync();
-    ViewBag.TotalFoundItems = await _context.Items.Where(i => i.Type == ItemType.Found && i.Status == ItemStatus.Active).CountAsync();
+    ViewBag.MyLostCount = await _context.Items
+        .Where(i => i.UserId == user.Id && i.Type == ItemType.Lost)
+        .CountAsync();
+
+    ViewBag.MyFoundCount = await _context.Items
+        .Where(i => i.UserId == user.Id && i.Type == ItemType.Found)
+        .CountAsync();
+
+    // Get recent items
+    ViewBag.RecentLostItems = await _context.Items
+        .Where(i => i.Type == ItemType.Lost && i.Status == ItemStatus.Active)
+        .OrderByDescending(i => i.DateReported)
+        .Take(5)
+        .ToListAsync();
+
+    ViewBag.RecentFoundItems = await _context.Items
+        .Where(i => i.Type == ItemType.Found && i.Status == ItemStatus.Active)
+        .OrderByDescending(i => i.DateReported)
+        .Take(5)
+        .ToListAsync();
+
+    // Admin-specific data
+    if (isAdmin)
+    {
+        ViewBag.PendingAdminRequests = await _context.AdminRequests
+            .Where(r => r.Status == AdminRequestStatus.Pending)
+            .CountAsync();
+
+        ViewBag.EscalatedItems = await _context.Items
+            .Where(i => i.IsEscalatedToAdmin && string.IsNullOrEmpty(i.AdminDecisionUserId))
+            .CountAsync();
+
+        ViewBag.TotalUsers = await _context.Users.CountAsync();
+
+        ViewBag.ResolvedToday = await _context.Items
+            .Where(i => i.Status == ItemStatus.Resolved && 
+                       i.DateReported.Date == DateTime.Today)
+            .CountAsync();
+
+        ViewBag.RecentAdminRequests = await _context.AdminRequests
+            .Include(r => r.Item)
+            .Include(r => r.Requester)
+            .OrderByDescending(r => r.RequestedAt)
+            .Take(5)
+            .ToListAsync();
+    }
 
     return View();
   }

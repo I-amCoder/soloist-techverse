@@ -4,6 +4,7 @@ using AspnetCoreMvcFull.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspnetCoreMvcFull.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250531090922_AdminRequestModel")]
+    partial class AdminRequestModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,7 +39,7 @@ namespace AspnetCoreMvcFull.Migrations
                     b.Property<string>("ClaimantId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("HandoverNotes")
+                    b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -158,7 +161,7 @@ namespace AspnetCoreMvcFull.Migrations
                         new
                         {
                             Id = "1",
-                            CreatedDate = new DateTime(2025, 5, 31, 9, 30, 12, 400, DateTimeKind.Utc).AddTicks(5888),
+                            CreatedDate = new DateTime(2025, 5, 31, 9, 9, 21, 841, DateTimeKind.Utc).AddTicks(8441),
                             Description = "Administrator with full access",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
@@ -166,7 +169,7 @@ namespace AspnetCoreMvcFull.Migrations
                         new
                         {
                             Id = "2",
-                            CreatedDate = new DateTime(2025, 5, 31, 9, 30, 12, 400, DateTimeKind.Utc).AddTicks(5950),
+                            CreatedDate = new DateTime(2025, 5, 31, 9, 9, 21, 841, DateTimeKind.Utc).AddTicks(8499),
                             Description = "Manager with limited access",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
@@ -174,7 +177,7 @@ namespace AspnetCoreMvcFull.Migrations
                         new
                         {
                             Id = "3",
-                            CreatedDate = new DateTime(2025, 5, 31, 9, 30, 12, 400, DateTimeKind.Utc).AddTicks(5953),
+                            CreatedDate = new DateTime(2025, 5, 31, 9, 9, 21, 841, DateTimeKind.Utc).AddTicks(8511),
                             Description = "Regular user",
                             Name = "User",
                             NormalizedName = "USER"

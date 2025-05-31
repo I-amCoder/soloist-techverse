@@ -11,7 +11,7 @@ using AspnetCoreMvcFull.Hubs;
 
 namespace AspnetCoreMvcFull.Controllers
 {
-    [Authorize]
+    [Authorize] 
     public class ItemsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -266,48 +266,35 @@ namespace AspnetCoreMvcFull.Controllers
         // POST: Submit claim request
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitClaim(int itemId, string message)
+        public async Task<IActionResult> SubmitClaim(int itemId, string handoverNotes)
         {
             var user = await _userManager.GetUserAsync(User);
-            var item = await _context.Items.FirstOrDefaultAsync(i => i.Id == itemId && i.Status == ItemStatus.Active);
-            
-            if (item == null)
+            if (user == null)
             {
-                TempData["Error"] = "Item not found or no longer available.";
-                return RedirectToAction(nameof(Lost));
+                return Unauthorized();
             }
-            
-            // Check if user already submitted a claim for this item
+
+            // Check if user already has a pending claim for this item
             var existingClaim = await _context.ClaimRequests
-                .FirstOrDefaultAsync(c => c.ItemId == itemId && c.ClaimantId == user!.Id && 
-                                    (c.Status == ClaimStatus.Pending || c.Status == ClaimStatus.Approved || c.Status == ClaimStatus.HandedOver));
-            
+                .FirstOrDefaultAsync(c => c.ItemId == itemId && c.ClaimantId == user.Id);
+
             if (existingClaim != null)
             {
                 TempData["Error"] = "You have already submitted a claim for this item.";
                 return RedirectToAction("Details", new { id = itemId });
             }
-            
-            // Don't allow claiming your own items
-            if (item.UserId == user!.Id)
-            {
-                TempData["Error"] = "You cannot claim your own item.";
-                return RedirectToAction("Details", new { id = itemId });
-            }
-            
+
             var claimRequest = new ClaimRequest
             {
                 ItemId = itemId,
                 ClaimantId = user.Id,
-                Message = message,
-                Status = ClaimStatus.Pending,
-                RequestDate = DateTime.UtcNow
+                HandoverNotes = handoverNotes
             };
-            
+
             _context.ClaimRequests.Add(claimRequest);
             await _context.SaveChangesAsync();
-            
-            TempData["Success"] = "Claim request submitted successfully! The item owner will be notified.";
+
+            TempData["Success"] = "Your claim has been submitted successfully!";
             return RedirectToAction("Details", new { id = itemId });
         }
 
@@ -605,6 +592,68 @@ namespace AspnetCoreMvcFull.Controllers
                 .ToListAsync();
 
             return View("Chat", messages);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitAdminRequest(int itemId, AdminRequestType requestType, string handoverNotes, string? claimantId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var item = await _context.Items.FindAsync(itemId);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            // Validate and find claimant if provided
+            string? validClaimantId = null;
+            if (!string.IsNullOrWhiteSpace(claimantId))
+            {
+                // Try to find user by email first
+                var claimantUser = await _userManager.FindByEmailAsync(claimantId.Trim());
+                
+                // If not found by email, try by username
+                if (claimantUser == null)
+                {
+                    claimantUser = await _userManager.FindByNameAsync(claimantId.Trim());
+                }
+                
+                // If still not found, try by ID directly
+                if (claimantUser == null)
+                {
+                    claimantUser = await _userManager.FindByIdAsync(claimantId.Trim());
+                }
+                
+                if (claimantUser != null)
+                {
+                    validClaimantId = claimantUser.Id;
+                }
+                else
+                {
+                    TempData["Error"] = "Claimant user not found. Please check the email/username.";
+                    return RedirectToAction("Details", new { id = itemId });
+                }
+            }
+
+            var adminRequest = new AdminRequest
+            {
+                ItemId = itemId,
+                RequesterId = user.Id,
+                ClaimantId = validClaimantId,
+                Type = requestType,
+                HandoverNotes = handoverNotes
+            };
+
+            _context.AdminRequests.Add(adminRequest);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Admin request submitted successfully!";
+            return RedirectToAction("Details", new { id = itemId });
         }
     }
 } 

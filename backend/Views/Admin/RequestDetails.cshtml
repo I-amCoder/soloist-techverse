@@ -1,0 +1,198 @@
+@model AspnetCoreMvcFull.Models.AdminRequest
+
+@{
+    ViewData["Title"] = "Request Details";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Admin Request Details</h5>
+                    <span
+                        class="badge bg-@(Model.Status == AdminRequestStatus.Pending ? "warning" : 
+                                                                                                                    Model.Status == AdminRequestStatus.Approved ? "success" :
+                                                                                                                    Model.Status == AdminRequestStatus.Rejected ? "danger" : "info")">
+                        @Model.Status
+                    </span>
+                </div>
+                <div class="card-body">
+                    <!-- Item Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Item Information</h6>
+                            <p><strong>Name:</strong> @Model.Item.Name</p>
+                            <p><strong>Type:</strong> @Model.Item.Type</p>
+                            <p><strong>Status:</strong>
+                                <span class="badge bg-secondary">@Model.Item.Status</span>
+                            </p>
+                            <a href="@Url.Action("Details", "Items", new { id = Model.ItemId })"
+                                class="btn btn-sm btn-outline-primary">View Item</a>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Request Information</h6>
+                            <p><strong>Type:</strong> <span class="badge bg-info">@Model.Type</span></p>
+                            <p><strong>Requested by:</strong> @Model.Requester.UserName</p>
+                            <p><strong>Date:</strong> @Model.RequestedAt.ToString("MMM dd, yyyy HH:mm")</p>
+                            @if (Model.Claimant != null)
+                            {
+                                <p><strong>Related Claimant:</strong> @Model.Claimant.UserName</p>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Handover Notes -->
+                    <div class="mb-4">
+                        <h6 class="text-muted">Handover Notes</h6>
+                        <div class="p-3 bg-light rounded">
+                            @Model.HandoverNotes
+                        </div>
+                    </div>
+
+                    <!-- Claims for this item -->
+                    @if (Model.Item.ClaimRequests?.Any() == true)
+                    {
+                        <div class="mb-4">
+                            <h6 class="text-muted">Related Claims</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Claimant</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var claim in Model.Item.ClaimRequests)
+                                        {
+                                            <tr>
+                                                <td>@claim.Claimant?.UserName</td>
+                                                <td>
+                                                    <span
+                                                        class="badge bg-@(claim.Status == ClaimStatus.Pending ? "warning" : 
+                                                                                                                                                                                    claim.Status == ClaimStatus.Approved ? "success" : 
+                                                                                                                                                                                    "danger")">
+                                                @claim.Status
+                                            </span>
+                                        </td>
+                                        <td>@claim.RequestDate.ToShortDateString()</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(claim.HandoverNotes))
+                                                    {
+                                                        @(claim.HandoverNotes.Length > 50 ? claim.HandoverNotes.Substring(0, 50) +
+                                                                                                    "..." : claim.HandoverNotes)
+                                                                                        }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">No notes</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.Status == AdminRequestStatus.Pending)
+                    {
+                        <hr>
+                        <h6>Admin Actions</h6>
+
+                        <!-- Approve Form -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">Approve Request</h6>
+                            </div>
+                            <div class="card-body">
+                                <form asp-action="ApproveRequest" method="post">
+                                    <input type="hidden" asp-for="Id" />
+                                    <div class="mb-3">
+                                        <label class="form-label">Claimant Email/Username (Optional)</label>
+                                        <input type="text" name="claimantEmail" class="form-control"
+                                            placeholder="Enter claimant's email or username">
+                                        <div class="form-text">
+                                            If provided, a claim will be automatically approved for this user and others
+                                            will be rejected.
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Admin Response</label>
+                                        <textarea name="adminResponse" class="form-control" rows="3" required
+                                        placeholder="Explain your decision and provide any handover instructions..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bx bx-check me-1"></i>Approve Request
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Resolve Form -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">Mark as Resolved</h6>
+                            </div>
+                            <div class="card-body">
+                                <form asp-action="ResolveRequest" method="post">
+                                    <input type="hidden" asp-for="Id" />
+                                    <div class="mb-3">
+                                        <label class="form-label">Resolution Notes</label>
+                                        <textarea name="adminResponse" class="form-control" rows="3" required
+                                        placeholder="Explain how this was resolved and any final handover details..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bx bx-check-circle me-1"></i>Mark as Resolved
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Reject Form -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="mb-0">Reject Request</h6>
+                            </div>
+                            <div class="card-body">
+                                <form asp-action="RejectRequest" method="post">
+                                    <input type="hidden" asp-for="Id" />
+                                    <div class="mb-3">
+                                        <label class="form-label">Rejection Reason</label>
+                                        <textarea name="adminResponse" class="form-control" rows="3" required
+                                        placeholder="Explain why this request is being rejected..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bx bx-x me-1"></i>Reject Request
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <h6><i class="bx bx-info-circle me-2"></i>Request Resolution</h6>
+                            <p><strong>Status:</strong> @Model.Status</p>
+                            <p><strong>Admin Response:</strong> @Model.AdminResponse</p>
+                            <p><strong>Resolved By:</strong> @Model.ResolvedBy?.UserName</p>
+                            <p><strong>Resolved At:</strong> @Model.ResolvedAt?.ToString("MMM dd, yyyy HH:mm")</p>
+                        </div>
+                    }
+
+                    <div class="mt-3">
+                        <a href="@Url.Action("Index", "Dashboard")" class="btn btn-secondary">
+                            <i class="bx bx-arrow-back me-1"></i>Back to Dashboard
+                        </a>
+                        <a href="@Url.Action("AllRequests", "Admin")" class="btn btn-outline-secondary">
+                            <i class="bx bx-list-ul me-1"></i>View All Requests
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
