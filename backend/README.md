@@ -16,7 +16,7 @@
 
 <kbd>[![Sneat - Free Bootstrap 5 .Net Core MVC Admin Template Demo Screenshot](https://cdn.themeselection.com/ts-assets/sneat/sneat-bootstrap-aspnet-core-mvc-admin-template-free/banner/banner.png)](https://themeselection.com/item/sneat-free-aspnet-core-mvc-admin-template/)</kbd>
 
-## Introduction 🚀
+## Introduction 🚀 
 
 If you’re a developer looking for the most Powerful & comprehensive [**Free Bootstrap 5 ASPNET Core MVC Admin Template**](https://themeselection.com/item/sneat-free-aspnet-core-mvc-admin-template/) built for developers, rich with features, and highly customizable look no further than Sneat. We’ve followed the highest industry standards to bring you the very best admin template that is not only fast and easy to use but highly scalable. Offering ultimate convenience and flexibility, you’ll be able to build whatever application you want with very little hassle.
 
