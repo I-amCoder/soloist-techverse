@@ -1,22 +1,52 @@
 @model IEnumerable<AspnetCoreMvcFull.Models.Message>
 
 <div class="chat-container">
-    <div class="messages">
+    <div class="d-flex justify-content-between mb-3">
+        <a asp-action="Details" asp-route-id="@ViewBag.ItemId" class="btn btn-outline-secondary">
+            <i class="bx bx-arrow-back me-1"></i>Back to Item
+        </a>
+        <a asp-action="MyRequests" class="btn btn-outline-secondary">
+            <i class="bx bx-list-ul me-1"></i>My Requests
+        </a>
+    </div>
+
+    <div class="chat-box border rounded p-3 mb-3" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
         @foreach (var message in Model)
         {
             <div
-                class="message @(message.SenderId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "sent" : "received")">
-                <p>@message.Content</p>
-                <small>@message.SentAt.ToString("MMM dd, HH:mm")</small>
+                class="message mb-2 @(message.SenderId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "sent" : "received")">
+                <div class="p-2 rounded"
+                    style="background-color: @(message.SenderId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "#d1e7dd" : "#e2e3e5");">
+                    <p class="mb-1">@message.Content</p>
+                    <small class="text-muted">@message.SentAt.ToString("MMM dd, HH:mm")</small>
+                </div>
             </div>
         }
     </div>
-    <form asp-action="SendMessage" method="post">
+
+    <form asp-action="SendMessage" method="post" class="d-flex">
         <input type="hidden" name="receiverId" value="@ViewBag.ReceiverId" />
-        <textarea name="content" required></textarea>
-        <button type="submit">Send</button>
+        <input type="hidden" name="itemId" value="@ViewBag.ItemId" />
+        <textarea name="content" class="form-control me-2" rows="1" placeholder="Type your message..."
+            required></textarea>
+        <button type="submit" class="btn btn-primary">Send</button>
     </form>
 </div>
+
+<style>
+    .chat-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .message.sent {
+        text-align: right;
+    }
+
+    .message.received {
+        text-align: left;
+    }
+</style>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
@@ -30,7 +60,7 @@
             const messageElement = document.createElement('div');
             messageElement.className = 'message received';
             messageElement.innerHTML = `<p>${message.content}</p><small>${new Date(message.sentAt).toLocaleString()}</small>`;
-            document.querySelector('.messages').appendChild(messageElement);
+            document.querySelector('.chat-box').appendChild(messageElement);
         });
 
         connection.start().catch(err => console.error(err.toString()));
