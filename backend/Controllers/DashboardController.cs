@@ -34,13 +34,13 @@ public class DashboardController : Controller
         return RedirectToAction("Login", "Account");
     }
 
-    // Get statistics for all users
+    // Get statistics for all users - Updated to show only active items
     ViewBag.TotalLostItems = await _context.Items
-        .Where(i => i.Type == ItemType.Lost)
+        .Where(i => i.Type == ItemType.Lost && i.Status == ItemStatus.Active)
         .CountAsync();
 
     ViewBag.TotalFoundItems = await _context.Items
-        .Where(i => i.Type == ItemType.Found)
+        .Where(i => i.Type == ItemType.Found && i.Status == ItemStatus.Active)
         .CountAsync();
 
     ViewBag.ReunitedItems = await _context.Items
