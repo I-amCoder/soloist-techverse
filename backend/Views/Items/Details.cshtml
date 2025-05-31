@@ -2,6 +2,9 @@
 @{
     ViewData["Title"] = $"{Model.Name} - {Model.Type} Item";
     ViewData["container"] = "container-fluid";
+    var isOwnerOrFinder = ViewBag.IsOwner;
+    var userRole = Model.Type == ItemType.Lost ? "owner" : "finder";
+    var userRoleCapitalized = Model.Type == ItemType.Lost ? "Owner" : "Finder";
 }
 
 <div class="row">
@@ -102,10 +105,10 @@
                         
                         <div class="mb-3">
                             <h6 class="fw-semibold mb-1">Posted by:</h6>
-                            <p class="text-muted mb-0"><i class="bx bx-user me-1"></i>@Model.User.UserName</p>
+                            <p class="text-muted mb-0"><i class="bx bx-user me-1"></i>@Model.User.UserName (@userRoleCapitalized)</p>
                         </div>
                         
-                        @if (!ViewBag.IsOwner && Model.Status == ItemStatus.Active)
+                        @if (!isOwnerOrFinder && Model.Status == ItemStatus.Active)
                         {
                             <div class="mb-3">
                                 <h6 class="fw-semibold mb-1">Contact Information:</h6>
@@ -127,12 +130,12 @@
                 </h5>
             </div>
             <div class="card-body">
-                @if (ViewBag.IsOwner)
+                @if (isOwnerOrFinder)
                 {
-                    <!-- Owner Actions -->
+                    <!-- Owner/Finder Actions -->
                     <div class="alert alert-info">
                         <i class="bx bx-info-circle me-2"></i>
-                        This is your item post.
+                        You are the @userRole of this item.
                     </div>
                     
                     @if (Model.Status == ItemStatus.Active)
@@ -159,9 +162,13 @@
                             <input type="hidden" name="itemId" value="@Model.Id" />
                             
                             <div class="mb-3">
-                                <label for="handoverNotes" class="form-label">Handover Notes</label>
+                                <label for="handoverNotes" class="form-label">
+                                    @(Model.Type == ItemType.Lost ? "Proof of Ownership" : "Claim Details")
+                                </label>
                                 <textarea name="handoverNotes" id="handoverNotes" class="form-control" rows="3" required
-                                          placeholder="Explain why you believe this item belongs to you and provide contact details for handover..."></textarea>
+                                          placeholder="@(Model.Type == ItemType.Lost ? 
+                                              "Explain why this item belongs to you and provide contact details for pickup..." : 
+                                              "Explain why you believe this is your item and provide contact details for verification...")"></textarea>
                             </div>
                             
                             <button type="submit" class="btn btn-@(Model.Type == ItemType.Lost ? "primary" : "success") w-100">
@@ -173,7 +180,7 @@
                     {
                         <div class="alert alert-warning">
                             <i class="bx bx-clock me-2"></i>
-                            You have already submitted a claim for this item. Please wait for the owner's response.
+                            You have already submitted a claim for this item. Please wait for the @userRole's response.
                         </div>
                         
                         <a asp-action="MyRequests" class="btn btn-outline-primary w-100">
@@ -182,7 +189,7 @@
                         
                         <!-- Chat Button for Claimer -->
                         <a asp-controller="Chat" asp-action="Chat" asp-route-itemId="@Model.Id" asp-route-receiverId="@Model.UserId" class="btn btn-outline-primary w-100 mt-2">
-                            <i class="bx bx-chat me-1"></i>Chat with Owner
+                            <i class="bx bx-chat me-1"></i>Chat with @userRoleCapitalized
                         </a>
                     }
                 }
@@ -196,8 +203,8 @@
             </div>
         </div>
         
-        <!-- Claim Requests (for owners) -->
-        @if (ViewBag.IsOwner && Model.ClaimRequests.Any())
+        <!-- Claim Requests (for owners/finders) -->
+        @if (isOwnerOrFinder && Model.ClaimRequests.Any())
         {
             <div class="card mt-4">
                 <div class="card-header">

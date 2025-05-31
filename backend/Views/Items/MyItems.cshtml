@@ -75,6 +75,9 @@
                                     </div>
                                     <div class="card-footer bg-transparent">
                                         <div class="d-flex gap-1">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                                <i class="bx bx-show me-1"></i>View Details
+                                            </a>
                                             @if (item.Status == ItemStatus.Active)
                                             {
                                                 <form asp-action="MarkAsReturned" method="post" class="d-inline">
@@ -153,6 +156,9 @@
                                     </div>
                                     <div class="card-footer bg-transparent">
                                         <div class="d-flex gap-1">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                                <i class="bx bx-show me-1"></i>View Details
+                                            </a>
                                             @if (item.Status == ItemStatus.Active)
                                             {
                                                 <form asp-action="MarkAsReturned" method="post" class="d-inline">
