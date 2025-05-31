@@ -204,6 +204,55 @@
     }
 </style>
 
+<!-- Filter Section -->
+<div class="container my-4">
+    <div class="filter-section">
+        <h4 class="mb-3">Browse Items</h4>
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <select name="type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="Lost" selected="@(ViewBag.CurrentType == "Lost")">Lost Items</option>
+                    <option value="Found" selected="@(ViewBag.CurrentType == "Found")">Found Items</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    @foreach (ItemCategory cat in Enum.GetValues<ItemCategory>())
+                    {
+                        <option value="@cat" selected="@(ViewBag.CurrentCategory == cat.ToString())">@cat</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search items..."
+                    value="@ViewBag.CurrentSearch">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bx bx-search me-1"></i>Filter
+                </button>
+            </div>
+        </form>
+
+        @if (!string.IsNullOrEmpty(ViewBag.CurrentType?.ToString()) ||
+                !string.IsNullOrEmpty(ViewBag.CurrentCategory?.ToString()) ||
+                !string.IsNullOrEmpty(ViewBag.CurrentSearch?.ToString()))
+        {
+            <div class="mt-3">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                    <i class="bx bx-x me-1"></i>Clear Filters
+                </a>
+                <a asp-action="Items" asp-route-type="@ViewBag.CurrentType" asp-route-category="@ViewBag.CurrentCategory"
+                    asp-route-search="@ViewBag.CurrentSearch" class="btn btn-outline-primary btn-sm ms-2">
+                    <i class="bx bx-list-ul me-1"></i>View All Results
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
 <!-- Hero Section -->
 <div class="hero-section"
     style="background: url('/img/backgrounds/umt.jpg') no-repeat center center; background-size: cover;">
@@ -300,56 +349,101 @@
     </div>
 </div>
 
-<!-- Recent Items Section -->
+<!-- Recent Items Section (now filtered) -->
 <div class="container my-5">
-    <h2 class="section-title">Recent Lost & Found Items</h2>
-    <p class="section-subtitle">Help reunite these items with their owners</p>
-
-    <div class="row">
-        @foreach (var item in Model.RecentItems.Take(8))
-        {
-            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                <div class="card item-card">
-                    @if (!string.IsNullOrEmpty(item.ImagePath))
-                    {
-                        <img src="@item.ImagePath" class="card-img-top item-image" alt="@item.Name">
-                    }
-                    else
-                    {
-                        <div class="item-image">
-                            <i class="bx bx-package"></i>
-                        </div>
-                    }
-                    <div class="card-body">
-                        <span class="category-tag">@item.Category</span>
-                        <h6 class="card-title text-truncate">@item.Name</h6>
-                        <p class="card-text text-muted small mb-2">@(item.Description.Length > 60 ?
-                                                    item.Description.Substring(0, 60) + "..." : item.Description)</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                            <i class="bx bx-map-pin me-1"></i>@item.Location
-                        </small>
-                        <span class="badge bg-@(item.Type == ItemType.Lost ? "danger" : "success")">
-                            @item.Type
-                        </span>
-                    </div>
-                    <div class="mt-3">
-                        <a href="@Url.Action("Preview", "Home", new { id = item.Id })"
-                            class="btn btn-outline-primary btn-sm w-100">
-                            <i class="bx bx-show me-1"></i>View Details
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="section-title">
+                @if (!string.IsNullOrEmpty(ViewBag.CurrentType?.ToString()) ||
+                                !string.IsNullOrEmpty(ViewBag.CurrentCategory?.ToString()) ||
+                                !string.IsNullOrEmpty(ViewBag.CurrentSearch?.ToString()))
+                {
+                    <span>Filtered Items</span>
                 }
-    </div>
-
-    <div class="text-center mt-4">
-        <a asp-controller="Items" asp-action="Index" class="btn btn-primary btn-lg">
-            <i class="bx bx-list-ul me-2"></i>View All Items
+                else
+                {
+                    <span>Recent Items</span>
+                }
+            </h2>
+            <p class="section-subtitle">
+                @if (Model.RecentItems.Any())
+                {
+                    <span>Showing @Model.RecentItems.Count items</span>
+                }
+                else
+                {
+                    <span>No items found matching your criteria</span>
+                }
+            </p>
+        </div>
+        <a asp-action="Items" asp-route-type="@ViewBag.CurrentType" asp-route-category="@ViewBag.CurrentCategory"
+            asp-route-search="@ViewBag.CurrentSearch" class="btn btn-outline-primary">
+            <i class="bx bx-list-ul me-2"></i>View All
         </a>
     </div>
+
+    @if (Model.RecentItems.Any())
+    {
+        <div class="row">
+            @foreach (var item in Model.RecentItems)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card item-card h-100">
+                        @if (!string.IsNullOrEmpty(item.ImagePath))
+                        {
+                            <img src="@item.ImagePath" class="card-img-top item-image" alt="@item.Name">
+                        }
+                        else
+                        {
+                            <div class="card-img-top item-placeholder">
+                                <i class="bx bx-image"></i>
+                            </div>
+                        }
+
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-@(item.Type == ItemType.Lost ? "danger" : "success")">
+                                    <i class="bx @(item.Type == ItemType.Lost ? "bx-search" : "bx-check-circle") me-1"></i>
+                                    @item.Type
+                                </span>
+                                <span class="badge bg-secondary">@item.Category</span>
+                            </div>
+
+                            <h6 class="card-title">@item.Name</h6>
+                            <p class="card-text text-muted small flex-grow-1">@item.Description</p>
+
+                            <div class="item-meta">
+                                <small class="text-muted">
+                                    <i class="bx bx-map-pin me-1"></i>@item.Location
+                                </small>
+                                <small class="text-muted ms-3">
+                                    <i class="bx bx-time me-1"></i>@((DateTime.UtcNow - item.DateReported).Days) days ago
+                                </small>
+                            </div>
+
+                            <div class="mt-3">
+                                <a href="@Url.Action("Preview", "Home", new { id = item.Id })"
+                                    class="btn btn-outline-primary btn-sm w-100">
+                                    <i class="bx bx-show me-1"></i>View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="bx bx-search display-1 text-muted"></i>
+            <h4 class="mt-3">No items found</h4>
+            <p class="text-muted">Try adjusting your filters or search terms</p>
+            <a asp-action="Index" class="btn btn-primary">
+                <i class="bx bx-refresh me-2"></i>Clear Filters
+            </a>
+        </div>
+    }
 </div>
 
 <!-- How It Works Section -->
@@ -420,28 +514,28 @@
             // Create attractive toast notification
             const toast = document.createElement('div');
             toast.style.cssText = `
-                        position: fixed;
-                        top: 20px;
-                        right: 20px;
-                        background: linear-gradient(45deg, #51cf66, #40c057);
-                        color: white;
-                        padding: 15px 20px;
-                        border-radius: 10px;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                        z-index: 9999;
-                        animation: slideInRight 0.3s ease;
-                    `;
+                                position: fixed;
+                                top: 20px;
+                                right: 20px;
+                                background: linear-gradient(45deg, #51cf66, #40c057);
+                                color: white;
+                                padding: 15px 20px;
+                                border-radius: 10px;
+                                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                                z-index: 9999;
+                                animation: slideInRight 0.3s ease;
+                            `;
 
             toast.innerHTML = `
-                        <div style="display: flex; align-items: center;">
-                            <i class="bx bx-check-circle me-2"></i>
-                            <div>
-                                <strong>New ${itemType} Item!</strong><br>
-                                <small>${itemName} has been reported</small>
-                            </div>
-                            <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; margin-left: 10px;">×</button>
-                        </div>
-                    `;
+                                <div style="display: flex; align-items: center;">
+                                    <i class="bx bx-check-circle me-2"></i>
+                                    <div>
+                                        <strong>New ${itemType} Item!</strong><br>
+                                        <small>${itemName} has been reported</small>
+                                    </div>
+                                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; margin-left: 10px;">×</button>
+                                </div>
+                            `;
 
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 5000);
@@ -452,11 +546,11 @@
         // Add CSS animation
         const style = document.createElement('style');
         style.textContent = `
-                    @@keyframes slideInRight {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                `;
+                            @@keyframes slideInRight {
+                                from { transform: translateX(100%); opacity: 0; }
+                                to { transform: translateX(0); opacity: 1; }
+                            }
+                        `;
         document.head.appendChild(style);
     </script>
 }

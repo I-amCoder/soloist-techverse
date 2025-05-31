@@ -65,6 +65,7 @@ namespace AspnetCoreMvcFull.Models
         public string? EscalationReason { get; set; }
         public string? AdminNotes { get; set; }
         public string? AdminDecisionUserId { get; set; } // Which admin handled it
+        public DateTime? DateResolved { get; set; }
     }
 
     public class ClaimRequest
